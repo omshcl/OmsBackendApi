@@ -1,0 +1,3 @@
+
+
+create table orders(id int PRIMARY KEY, address text, channel text, city text, date text, firstname text, lastname text, items map<text,text>, payment text, state text, total int, zip text);

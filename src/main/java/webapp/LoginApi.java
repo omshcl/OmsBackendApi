@@ -6,15 +6,14 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
-public class LoginApi {
+public class LoginApi extends Api {
 	
-	private Cluster cluster;
 	private Session session;
 	private PreparedStatement user_lookup_stmt, is_admin_stmt;
 
 	public LoginApi() {
-		cluster = Cluster.builder().addContactPoint("127.0.0.1").build();
-		session = cluster.connect("oms");
+		super();
+		session = super.getSession();
 		user_lookup_stmt = session.prepare("SELECT *  FROM users where username = ? and password = ? ALLOW FILTERING;");
 		is_admin_stmt    = session.prepare("SELECT isAdmin from users where username = ?");
 	}
