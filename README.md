@@ -33,7 +33,8 @@ valid is whether a user exists and their password matches. isAdmin determines if
 "isAdmin": false
 }
 ```
-## Create Order
+## Order
+### Create Login
 `/order/new`
 Method: Post
 ```
@@ -57,6 +58,119 @@ Method: Post
 response
 ```
 {"sucesss":"true"}
+```
+### List Orders
+`/order/list`  
+Method: Get  
+Response  
+```
+[
+    {
+        "date": "2019-06-12T05:00:00.000Z",
+        "zip": "75033",
+        "firstname": "Jane",
+        "total": 534,
+        "address": "12345 Main St",
+        "city": "Frisco",
+        "channel": "Online",
+        "payment": "Credit",
+        "id": 16,
+        "state": "TX",
+        "items": {
+            "Item 3": 1,
+            "Laptop": 2,
+            "Cellephone": 3
+        },
+        "lastname": "Doe"
+    },
+    {
+        "date": "2019-06-12T05:00:00.000Z",
+        "zip": "75033",
+        "firstname": "Jane",
+        "total": 534,
+        "address": "12345 Main St",
+        "city": "Frisco",
+        "channel": "Online",
+        "payment": "Credit",
+        "id": 11,
+        "state": "TX",
+        "items": {
+            "Laptop": 1,
+            "Cellphone": 1
+        },
+        "lastname": "Doe"
+    },
+    {
+        "date": "2019-06-12T05:00:00.000Z",
+        "zip": "75033",
+        "firstname": "Jane",
+        "total": 534,
+        "address": "12345 Main St",
+        "city": "Frisco",
+        "channel": "Online",
+        "payment": "Credit",
+        "id": 15,
+        "state": "TX",
+        "items": {
+            "Item 3": 1,
+            "Laptop": 2,
+            "Cellephone": 3
+        },
+        "lastname": "Doe"
+    },
+    {
+        "date": "2019-06-12T05:00:00.000Z",
+        "zip": "75033",
+        "firstname": "Jane",
+        "total": 534,
+        "address": "12345 Main St",
+        "city": "Frisco",
+        "channel": "Online",
+        "payment": "Credit",
+        "id": 14,
+        "state": "TX",
+        "items": {
+            "Item 3": 1,
+            "Item 2": 3,
+            "Item 1": 2
+        },
+        "lastname": "Doe"
+    },
+    {
+        "date": "2019-06-12T05:00:00.000Z",
+        "zip": "75033",
+        "firstname": "Jane",
+        "total": 534,
+        "address": "12345 Main St",
+        "city": "Frisco",
+        "channel": "Online",
+        "payment": "Credit",
+        "id": 17,
+        "state": "TX",
+        "items": {
+            "Laptop": 2,
+            "Cellephone": 3
+        },
+        "lastname": "Doe"
+    },
+    {
+        "date": "2019-06-12T05:00:00.000Z",
+        "zip": "75033",
+        "firstname": "Jane",
+        "total": 534,
+        "address": "12345 Main St",
+        "city": "Frisco",
+        "channel": "Online",
+        "payment": "Credit",
+        "id": 12,
+        "state": "TX",
+        "items": {
+            "Laptop": 1,
+            "Cellphone": 1
+        },
+        "lastname": "Doe"
+    }
+]
 ```
 
 ## List Items

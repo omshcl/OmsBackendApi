@@ -12,11 +12,11 @@ import org.json.JSONObject;
 
 
 @WebServlet(urlPatterns="/orders/new")
-public class OrderServlet extends HttpServlet {
+public class OrderCreate extends HttpServlet {
 
 	private  OrderApi orderApi;
 	
-	public OrderServlet() {
+	public OrderCreate() {
 		orderApi = new OrderApi();
 		
 	}

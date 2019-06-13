@@ -17,7 +17,8 @@ import oms.Api;
 public class OrderApi extends Api {
 	
 	private Session session;
-	private PreparedStatement create_order_stmt, is_admin_stmt,select_next_id,inc_id_stmt;
+	private PreparedStatement create_order_stmt, is_admin_stmt,
+	select_next_id,inc_id_stmt,list_items_stmt;
 
 	public OrderApi() {
 		super();
@@ -26,6 +27,7 @@ public class OrderApi extends Api {
 		is_admin_stmt     = session.prepare("SELECT isAdmin from users where username = ?");
 		select_next_id    = session.prepare("SELECT next from order_id");
 		inc_id_stmt       = session.prepare("UPDATE order_id set next = ? where id ='id'");
+		list_items_stmt   = session.prepare("SELECT * from orders");
 	}
 	
 	private int getOrderId() {
@@ -64,5 +66,35 @@ public class OrderApi extends Api {
 			return false;
 		}
 		return row.getBool("isadmin");
+	}
+
+	public JSONArray listOrders() {
+		JSONArray orders = new JSONArray();
+		for(Row order:session.execute(list_items_stmt.bind())) {
+			JSONObject orderJson = new JSONObject();
+			orderJson.put("id", order.getInt("id"));
+			orderJson.put("address", order.getString("address"));
+			orderJson.put("channel", order.getString("channel"));
+			orderJson.put("city", order.getString("city"));
+			orderJson.put("date", order.getString("date"));
+			orderJson.put("firstname", order.getString("firstname"));
+			orderJson.put("lastname", order.getString("lastname"));
+			orderJson.put("payment", order.getString("payment"));
+			orderJson.put("state", order.getString("state"));
+			orderJson.put("total", order.getInt("total"));
+			orderJson.put("zip",   order.getString("zip"));
+			
+			JSONArray itemsJson = new JSONArray();
+			Map<String,Integer> items = order.getMap("items", String.class, Integer.class);
+			for(String itemName:items.keySet()) {
+				JSONObject item = new JSONObject();
+				item.put("id",itemName);
+				item.put("quanity",items.get(itemName));
+				itemsJson.put(item);
+			}
+			orderJson.put("items",items);
+			orders.put(orderJson);
+		}
+		return orders;
 	}
 }
