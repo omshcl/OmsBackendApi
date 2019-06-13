@@ -1,5 +1,5 @@
 # Files
-OmsBackendApi/Java Resources/src/main/java/webapp
+OmsBackendApi/Java Resources/src/main/java/webapp  
 ├── `Api.java` The base Api class connects to the Cassandra cluster  
 ├──`LoginApi.java` Extends the Api class and handles login related cassandra queries  
 ├──`LoginServlet.java` Handles the `/login` endpoint responds to login requests  
