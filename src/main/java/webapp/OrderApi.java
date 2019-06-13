@@ -44,8 +44,10 @@ public class OrderApi extends Api {
 		String address   = json.getString("address");
 		int total        = json.getInt("total"); 
 		int id            = getOrderId();
-		Map<String,String> map = new HashMap();
-		map.put("d", "apples");	
+		Map<String,Integer> map = new HashMap();
+		map.put("Cellphone",1);
+		map.put("Laptop", 1);
+		
 		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,map));
 	}
 	
