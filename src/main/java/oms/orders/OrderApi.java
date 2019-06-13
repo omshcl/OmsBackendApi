@@ -1,4 +1,4 @@
-package webapp;
+package oms.orders;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +11,8 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+
+import oms.Api;
 
 public class OrderApi extends Api {
 	

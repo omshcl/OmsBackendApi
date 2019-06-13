@@ -1,4 +1,4 @@
-package webapp;
+package oms;
 
 
 import com.datastax.driver.core.Cluster;

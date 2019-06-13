@@ -1,10 +1,12 @@
-package webapp;
+package oms.login;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+
+import oms.Api;
 
 public class LoginApi extends Api {
 	

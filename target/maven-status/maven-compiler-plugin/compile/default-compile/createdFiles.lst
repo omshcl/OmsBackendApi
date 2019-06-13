@@ -1,5 +1,6 @@
-webapp\Api.class
-webapp\OrderApi.class
-webapp\LoginServlet.class
-webapp\LoginApi.class
-webapp\OrderServlet.class
+oms\items\ItemsApi.class
+oms\login\LoginApi.class
+oms\orders\OrderServlet.class
+oms\Api.class
+oms\orders\OrderApi.class
+oms\login\LoginServlet.class
