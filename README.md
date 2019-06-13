@@ -11,7 +11,7 @@
 ├──`OrderServlet.java` Handles the `/orders/new` inserts data into to orders table
 
 
-## table structure
+# Table Structure
 
 ### users table
 
