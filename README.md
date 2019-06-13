@@ -16,7 +16,7 @@ To build and run type
 `mvn tomcat7:run`
 
 # endpoints
-## login
+## Login
 `/login`
 Method: POST
 ```
@@ -32,7 +32,7 @@ response
 "isAdmin": false
 }
 ```
-## CreateOrder
+## Create Order
 `/order/new`
 Method: Post
 ```
@@ -57,12 +57,10 @@ response
 ```
 {"sucesss":"true"}
 ```
-# running tests
-`python test.py`
 
 # Table Structure
 
-### users table
+## users table
 
  username | isadmin | password
   
