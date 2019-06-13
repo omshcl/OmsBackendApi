@@ -61,7 +61,7 @@ response
 
 ## List Items
 `/items/list`
-Method: Get
+Method: Get  
 Response
 ```
 [
