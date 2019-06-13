@@ -1,6 +1,0 @@
-oms\items\ItemsApi.class
-oms\login\LoginApi.class
-oms\orders\OrderServlet.class
-oms\Api.class
-oms\orders\OrderApi.class
-oms\login\LoginServlet.class

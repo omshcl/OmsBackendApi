@@ -59,6 +59,30 @@ response
 {"sucesss":"true"}
 ```
 
+## List Items
+`/items/list`
+Method: Get
+Response
+```
+[
+    {
+        "item_price": 20000,
+        "description": "Landline",
+        "id": "0003"
+    },
+    {
+        "item_price": 20000,
+        "description": "Landline",
+        "id": "0002"
+    },
+    {
+        "item_price": 900,
+        "description": "Cellephone",
+        "id": "0001"
+    }
+]
+```
+
 # Table Structure
 
 ## users table
@@ -83,3 +107,11 @@ The `order_id` table is used to generate the next id for orders. It's necessary 
     CREATE TABLE oms.order_id (id text PRIMARY KEY,next int)
   
     id |   12
+
+## Items table
+ 
+   CREATE TABLE oms.items (
+      item_id text PRIMARY KEY,
+      item_description text,
+      item_price int
+   )

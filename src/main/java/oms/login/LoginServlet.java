@@ -33,14 +33,11 @@ public class LoginServlet extends HttpServlet {
 		
 		//parse request data and parse as json
 		JSONObject json = new JSONObject(jb.toString());
-		
-		System.out.println("login");
-		System.out.println(json.toString());
 		//get username and password from json
 		String username = json.getString("username");
 		String password = json.getString("password");
 		
-		//query userstatus from loginService
+		//query users tatus from loginService
 		boolean isValid = loginApi.validateUser(username, password);
 		boolean isAdmin = false;
 		//only query for user status if user is valid
