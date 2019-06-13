@@ -76,6 +76,7 @@ response
  
     CREATE TABLE oms.orders (id int PRIMARY KEY,address text,channel text,city text,date text,firstname text,items map<text, int>,lastname text,payment text,state text,total int,zip text)
 example data
+ 
     11 | 12345 Main St |  Online | Frisco | 2019-06-12T05:00:00.000Z |      Jane | {'Cellphone': 1, 'Laptop': 1} |      Doe |  Credit |    TX |   534 | 75033
 
 #### order id table
