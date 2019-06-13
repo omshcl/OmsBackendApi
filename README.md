@@ -1,3 +1,8 @@
+# Files
+
+├── `Api.java`
+
+├── _drafts
 
 ## table structure
 
@@ -17,6 +22,7 @@
 
 #### order id table
 The `order_id` table is used to generate the next id for orders. It's necessary because Cassandra does not implement an autoincrement feature. When a new order is created the value of this table is incremented to generate a new order id.
+
  id | next
  
     id |   12
