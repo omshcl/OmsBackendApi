@@ -12,7 +12,7 @@ OmsBackendApi/Java Resources/src/main/java/webapp
 - Apache Cassandra running
 - Tables created in Cassandra
 - Mvn installed
-To build and run type
+To build and run type  
 `mvn tomcat7:run`
 
 # endpoints
