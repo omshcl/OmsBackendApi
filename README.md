@@ -16,8 +16,8 @@
 ### users table
 
  username | isadmin | password
+  
     admin |    True | Admin!123
-    
     agent |   False | Agent!123
 
 ### orders table
