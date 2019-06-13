@@ -32,9 +32,10 @@ public class OrderServlet extends HttpServlet {
 		//parse request data and parse as json
 		JSONObject json = new JSONObject(jb.toString());
 		orderApi.createOrder(json);
-		System.out.println("inserted");
-		System.out.println(json.toString());
-		response.getWriter().write("TEST");
+		response.setCharacterEncoding("UTF-8");
+		response.setHeader("Access-Control-Allow-Origin","*");
+		String responseJson = new JSONObject().put("sucesss","true").toString();
+		response.getWriter().write(responseJson);
 	}
-
+	
 }

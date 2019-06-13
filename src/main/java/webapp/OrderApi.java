@@ -3,6 +3,7 @@ package webapp;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.datastax.driver.core.Cluster;
@@ -44,10 +45,13 @@ public class OrderApi extends Api {
 		String address   = json.getString("address");
 		int total        = json.getInt("total"); 
 		int id            = getOrderId();
-		Map<String,Integer> map = new HashMap();
-		map.put("Cellphone",1);
-		map.put("Laptop", 1);
-		
+		//extract item name and quanity from request
+		JSONArray items = json.getJSONArray("items");
+		Map<String,Integer> map = new HashMap<>();
+		for(int i =0; i < items.length();i ++) {
+			JSONObject item = items.getJSONObject(i);
+			map.put(item.getString("item"),item.getInt("quantity"));		
+		}
 		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,map));
 	}
 	

@@ -8,6 +8,57 @@ OmsBackendApi/Java Resources/src/main/java/webapp
 ├──`OrderApi.java` Extends the Api class and handles login related cassandra queries  
 ├──`OrderServlet.java` Handles the `/orders/new` inserts data into to orders table
 
+#  Requirements
+- Apache Cassandra running
+- Tables created in Cassandra
+- Mvn installed
+To build and run type
+`mvn tomcat7:run`
+
+# endpoints
+## login
+`/login`
+Method: POST
+```
+{
+"username":"user",
+"password":"pass"
+}
+```
+response
+```
+{
+"valid": false,
+"isAdmin": false
+}
+```
+## CreateOrder
+`/order/new`
+Method: Post
+```
+{"items": [
+{ "item": "Laptop", "quantity":2},
+{ "item": "Cellephone", "quantity":3 },
+{ "item": "Item 3", "quantity":1}
+],
+"channel": "Online",
+"date": "2019-06-12T05:00:00.000Z",
+"firstname": "Jane",
+"lastname": "Doe",
+"address": "12345 Main St",
+"city": "Frisco",
+"state": "TX",
+"zip": "75033",
+"payment": "Credit",
+"total": 534
+}
+```
+response
+```
+{"sucesss":"true"}
+```
+# running tests
+`python test.py`
 
 # Table Structure
 
