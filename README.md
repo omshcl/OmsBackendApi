@@ -84,4 +84,5 @@ The `order_id` table is used to generate the next id for orders. It's necessary 
  
     CREATE TABLE oms.order_id (id text PRIMARY KEY,next int)
 example data
+ 
     id |   12
