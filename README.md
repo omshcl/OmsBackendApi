@@ -11,7 +11,7 @@ OmsBackendApi/Java Resources/src/main/java/webapp
 #  Requirements
 - Apache Cassandra running
 - Tables created in Cassandra
-- Mvn installed
+- Mvn installed  
 To build and run type  
 `mvn tomcat7:run`
 
@@ -25,7 +25,8 @@ Method: POST
 "password":"pass"
 }
 ```
-response
+response 
+valid is whether a user exists and their password matches. isAdmin determines if a user is an administrator
 ```
 {
 "valid": false,
