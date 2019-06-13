@@ -184,15 +184,15 @@ Response
 OmsBackendApi/src/main/java/oms   
 ├── `Api.java` The base Api class connects to the Cassandra cluster  
 ├── oms.items  
-|   ├── `ItemApi.java` Extends Items  
-|   └── `ItemsServlet.java`  
+⧸    ├── `ItemApi.java` Extends Items  
+⧸    └── `ItemsServlet.java`  
 ├── oms.login  
-|   ├── `LoginApi.java` Extends the Api class and handles login related cassandra queries  
-|   └── `LoginServlet.java` Handles the `/login` endpoint responds to login requests  
+⧸   ├── `LoginApi.java` Extends the Api class and handles login related cassandra queries  
+⧸     └── `LoginServlet.java` Handles the `/login` endpoint responds to login requests  
 ├── oms.orders  
-|   ├── `OrderApi.java` Extends the Api class and handles login related cassandra queries  
-|   ├── `OrderCreate.java` Handles the `/orders/new` endpoint, inserts data into to orders table  
-|   └── `OrderLeast.java`  Handles the `/orders/list` endpoint, queries all orders from db  
+⧸     ├── `OrderApi.java` Extends the Api class and handles login related cassandra queries  
+⧸     ├── `OrderCreate.java` Handles the `/orders/new` endpoint, inserts data into to orders table  
+⧸     └── `OrderLeast.java`  Handles the `/orders/list` endpoint, queries all orders from db  
 #  Requirements
 - Apache Cassandra running
 - Tables created in Cassandra
