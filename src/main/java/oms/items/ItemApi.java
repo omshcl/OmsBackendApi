@@ -23,12 +23,14 @@ public class ItemApi extends Api {
 	}
 	
 	public JSONArray getItems() {
+		String[] strCols = {"id","description"};
 		JSONArray jsonArray = new JSONArray();
 		for (Row row :session.execute(get_items_stmt.bind()).all()) {
 			JSONObject jsonRow = new JSONObject();
-			jsonRow.put("id", row.getString("item_id"));
-			jsonRow.put("description", row.getString("item_description"));
-			jsonRow.put("item_price", row.getInt("item_price"));
+			jsonRow.put("id", row.getString("id"));
+			for(String colName:strCols)
+				jsonRow.put(colName, row.getString(colName));
+			jsonRow.put("price", row.getInt("price"));
 			jsonArray.put(jsonRow);
 		}
 		return jsonArray;

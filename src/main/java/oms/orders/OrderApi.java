@@ -33,6 +33,7 @@ public class OrderApi extends Api {
 	private int getOrderId() {
 		Row row = session.execute(select_next_id.bind()).one();
 		int id = row.getInt("next");
+		//updates id in database
 		session.execute(inc_id_stmt.bind(id+1));
 		return id;
 	}
@@ -72,19 +73,19 @@ public class OrderApi extends Api {
 		JSONArray orders = new JSONArray();
 		
 		for(Row order:session.execute(list_items_stmt.bind())) {
+			//build order json for each row 
 			JSONObject orderJson = new JSONObject();
+			String[] strColumns = {"address","channel","city","date"
+					,"firstname","lastname","payment","state","zip"};
+			String[] intColumns = {"id","total"};
 			orderJson.put("id", order.getInt("id"));
-			orderJson.put("address", order.getString("address"));
-			orderJson.put("channel", order.getString("channel"));
-			orderJson.put("city", order.getString("city"));
-			orderJson.put("date", order.getString("date"));
-			orderJson.put("firstname", order.getString("firstname"));
-			orderJson.put("lastname", order.getString("lastname"));
-			orderJson.put("payment", order.getString("payment"));
-			orderJson.put("state", order.getString("state"));
-			orderJson.put("total", order.getInt("total"));
-			orderJson.put("zip",   order.getString("zip"));
-			//build 
+			//populate json object columns
+			for(String colName:strColumns)
+				orderJson.put(colName, order.getString(colName));
+			for(String colName:intColumns)
+				orderJson.put(colName, order.getInt(colName));
+			
+			//build items json Array
 			JSONArray itemsJson = new JSONArray();
 			Map<String,Integer> items = order.getMap("items", String.class, Integer.class);
 			for(String itemName:items.keySet()) {

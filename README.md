@@ -163,17 +163,17 @@ Response
 ```
 [
     {
-        "item_price": 20000,
-        "description": "Landline",
+        "price": 200,
+        "description": "LandLine",
         "id": "0003"
     },
     {
-        "item_price": 20000,
-        "description": "Landline",
+        "price": 2000,
+        "description": "Laptop",
         "id": "0002"
     },
     {
-        "item_price": 900,
+        "price": 1,
         "description": "Cellephone",
         "id": "0001"
     }
@@ -212,13 +212,14 @@ To build and run type
     admin |    True | Admin!123
     agent |   False | Agent!123
 
-### orders table
+### orders tagible
   The `orders` table stores data associated with each order. The id of each order is auto incrementating. The Items column is a map between Item name and the quanity of that item ordered.
  
     CREATE TABLE oms.orders (id int PRIMARY KEY,address text,channel text,city text,date text,firstname text,items map<text, int>,lastname text,payment text,state text,total int,zip text)
 example data
  
-    11 | 12345 Main St |  Online | Frisco | 2019-06-12T05:00:00.000Z |      Jane | {'Cellphone': 1, 'Laptop': 1} |      Doe |  Credit |    TX |   534 | 75033
+    11 | 12345 ls
+     St |  Online | Frisco | 2019-06-12T05:00:00.000Z |      Jane | {'Cellphone': 1, 'Laptop': 1} |      Doe |  Credit |    TX |   534 | 75033
 
 #### order id table
 The `order_id` table is used to generate the next id for orders. It's necessary because Cassandra does not implement an autoincrement feature. When a new order is created the value of this table is incremented to generate a new order id.
@@ -230,8 +231,8 @@ example data
 
 ## Items table
  
-   CREATE TABLE oms.items (
-      item_id text PRIMARY KEY,
-      item_description text,
-      item_price int
-   )
+   CREATE TABLE oms.items (id text PRIMARY KEY,description text,price int)
+
+ insert into items (id,description,price) values('0001','Cellephone',1);
+cqlsh:oms> insert into items (id,description,price) values('0002','Laptop',2000);
+cqlsh:oms> insert into items (id,description,price) values('0003','LandLine',200);
