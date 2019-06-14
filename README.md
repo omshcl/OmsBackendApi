@@ -233,6 +233,6 @@ example data
  
    CREATE TABLE oms.items (id text PRIMARY KEY,description text,price int)
 
- insert into items (id,description,price) values('0001','Cellephone',1);
-cqlsh:oms> insert into items (id,description,price) values('0002','Laptop',2000);
-cqlsh:oms> insert into items (id,description,price) values('0003','LandLine',200);
+    insert into items (id,description,price) values('0001','Cellephone',1);  
+    insert into items (id,description,price) values('0002','Laptop',2000);
+    insert into items (id,description,price) values('0003','LandLine',200);
