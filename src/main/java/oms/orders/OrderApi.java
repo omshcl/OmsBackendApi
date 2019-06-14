@@ -18,7 +18,7 @@ public class OrderApi extends Api {
 	
 	private Session session;
 	private PreparedStatement create_order_stmt, is_admin_stmt,
-	select_next_id,inc_id_stmt,list_items_stmt;
+	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt;
 
 	public OrderApi() {
 		super();
@@ -28,7 +28,10 @@ public class OrderApi extends Api {
 		select_next_id    = session.prepare("SELECT next from order_id");
 		inc_id_stmt       = session.prepare("UPDATE order_id set next = ? where id ='id'");
 		list_items_stmt   = session.prepare("SELECT * from orders");
+		get_info_stmt     = session.prepare("SELECT * from orders where id = ?");
 	}
+	
+	
 	
 	private int getOrderId() {
 		Row row = session.execute(select_next_id.bind()).one();
@@ -58,6 +61,37 @@ public class OrderApi extends Api {
 			map.put(item.getString("item"),item.getInt("quantity"));		
 		}
 		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,map));
+	}
+	
+	public JSONArray getSummary(int id) {
+	JSONArray orders = new JSONArray();
+		
+		for(Row order:session.execute(get_info_stmt.bind(id))) {
+			//build order json for each row 
+			JSONObject orderJson = new JSONObject();
+			String[] strColumns = {"address","channel","city","date"
+					,"firstname","lastname","payment","state","zip"};
+			String[] intColumns = {"id","total"};
+			orderJson.put("id", order.getInt("id"));
+			//populate json object columns
+			for(String colName:strColumns)
+				orderJson.put(colName, order.getString(colName));
+			for(String colName:intColumns)
+				orderJson.put(colName, order.getInt(colName));
+			
+			//build items json Array
+			JSONArray itemsJson = new JSONArray();
+			Map<String,Integer> items = order.getMap("items", String.class, Integer.class);
+			for(String itemName:items.keySet()) {
+				JSONObject item = new JSONObject();
+				item.put("id",itemName);
+				item.put("quanity",items.get(itemName));
+				itemsJson.put(item);
+			}
+			orderJson.put("items",items);
+			orders.put(orderJson);
+		}
+		return orders;
 	}
 	
 	public boolean isAdmin(String user) {
