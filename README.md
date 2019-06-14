@@ -18,7 +18,7 @@ valid is whether a user exists and their password matches. isAdmin determines if
 ```
 ## Order
 ### Create Login
-`/order/new`
+`/orders/new`
 Method: Post
 ```
 {"items": [
@@ -43,7 +43,7 @@ response
 {"sucesss":"true"}
 ```
 ### List Orders
-`/order/list`  
+`/orders/list`  
 Method: Get  
 Response  
 ```

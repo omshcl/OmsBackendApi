@@ -70,6 +70,7 @@ public class OrderApi extends Api {
 
 	public JSONArray listOrders() {
 		JSONArray orders = new JSONArray();
+		
 		for(Row order:session.execute(list_items_stmt.bind())) {
 			JSONObject orderJson = new JSONObject();
 			orderJson.put("id", order.getInt("id"));
@@ -83,7 +84,7 @@ public class OrderApi extends Api {
 			orderJson.put("state", order.getString("state"));
 			orderJson.put("total", order.getInt("total"));
 			orderJson.put("zip",   order.getString("zip"));
-			
+			//build 
 			JSONArray itemsJson = new JSONArray();
 			Map<String,Integer> items = order.getMap("items", String.class, Integer.class);
 			for(String itemName:items.keySet()) {

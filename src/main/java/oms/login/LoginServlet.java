@@ -19,8 +19,6 @@ public class LoginServlet extends HttpServlet {
 	public LoginServlet() {
 		loginApi = new LoginApi();
 	}
-
-	
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -33,6 +31,7 @@ public class LoginServlet extends HttpServlet {
 		
 		//parse request data and parse as json
 		JSONObject json = new JSONObject(jb.toString());
+		
 		//get username and password from json
 		String username = json.getString("username");
 		String password = json.getString("password");
@@ -48,6 +47,7 @@ public class LoginServlet extends HttpServlet {
 		response.setContentType("applications/json");
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin","*");
+		
 		String responseJson = new JSONObject().put("isValid",isValid).put("isAdmin", isAdmin).toString();
 		response.getWriter().write(responseJson);
 	}
