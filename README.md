@@ -17,7 +17,7 @@ valid is whether a user exists and their password matches. isAdmin determines if
 }
 ```
 ## Order
-### Create Login
+### Create Order
 `/orders/new`
 Method: Post
 ```
@@ -36,6 +36,32 @@ Method: Post
 "zip": "75033",
 "payment": "Credit",
 "total": 534
+}
+```
+response
+```
+{"sucesss":"true"}
+```
+
+### Update Order
+`/orders/update`
+Method: Post
+```
+{"items": [
+{ "item": "Laptop", "quantity":2},
+{ "item": "Cellephone", "quantity":3 }
+],
+"channel": "Online",
+"date": "2019-06-12T05:00:00.000Z",
+"firstname": "John",
+"lastname": "Doe",
+"address": "12345 Main St",
+"city": "Frisco",
+"state": "TX",
+"zip": "75033",
+"payment": "Credit",
+"total": 534,
+"id":12
 }
 ```
 response

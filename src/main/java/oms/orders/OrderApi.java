@@ -6,7 +6,6 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -42,25 +41,7 @@ public class OrderApi extends Api {
 	}
 	
 	public void createOrder(JSONObject json) {
-		String channel   = json.getString("channel");
-		String date      = json.getString("date");
-		String firstname = json.getString("firstname");
-		String lastname  = json.getString("lastname");
-		String city      = json.getString("city");
-		String state     = json.getString("state");
-		String zip       = json.getString("zip");
-		String payment   = json.getString("payment");
-		String address   = json.getString("address");
-		int total        = json.getInt("total"); 
-		int id            = getOrderId();
-		//extract item name and quanity from request
-		JSONArray items = json.getJSONArray("items");
-		Map<String,Integer> map = new HashMap<>();
-		for(int i =0; i < items.length();i ++) {
-			JSONObject item = items.getJSONObject(i);
-			map.put(item.getString("item"),item.getInt("quantity"));		
-		}
-		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,map));
+		insertOrderIntoDb(getOrderId(), json);
 	}
 	
 	public JSONArray getSummary(int id) {
@@ -132,5 +113,36 @@ public class OrderApi extends Api {
 			orders.put(orderJson);
 		}
 		return orders;
+	}
+
+
+	
+	private void insertOrderIntoDb(int id, JSONObject json) {
+		String channel   = json.getString("channel");
+		String date      = json.getString("date");
+		String firstname = json.getString("firstname");
+		String lastname  = json.getString("lastname");
+		String city      = json.getString("city");
+		String state     = json.getString("state");
+		String zip       = json.getString("zip");
+		String payment   = json.getString("payment");
+		String address   = json.getString("address");
+		int total        = json.getInt("total"); 
+	
+		//extract item name and quanity from request
+		JSONArray items = json.getJSONArray("items");
+		Map<String,Integer> map = new HashMap<>();
+		for(int i =0; i < items.length();i ++) {
+			JSONObject item = items.getJSONObject(i);
+			map.put(item.getString("item"),item.getInt("quantity"));		
+		}
+		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,map));
+		
+		
+	}
+
+	public void updateOrder(JSONObject json) {
+		int id           = json.getInt("id");
+		insertOrderIntoDb(id,json);
 	}
 }
