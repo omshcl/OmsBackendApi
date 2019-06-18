@@ -17,7 +17,7 @@ public class OrderApi extends Api {
 	
 	private Session session;
 	private PreparedStatement create_order_stmt, is_admin_stmt,
-	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt;
+	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt;
 
 	public OrderApi() {
 		super();
@@ -28,6 +28,7 @@ public class OrderApi extends Api {
 		inc_id_stmt       = session.prepare("UPDATE order_id set next = ? where id ='id'");
 		list_items_stmt   = session.prepare("SELECT * from orders");
 		get_info_stmt     = session.prepare("SELECT * from orders where id = ?");
+		get_price_stmt    = session.prepare("SELECT price from items where description = ? allow filtering");
 	}
 	
 	
@@ -44,7 +45,13 @@ public class OrderApi extends Api {
 		insertOrderIntoDb(getOrderId(), json);
 	}
 	
-	public JSONArray getSummary(int id) {
+	private int getPrice(String itemName) {
+		Row row = session.execute(get_price_stmt.bind(itemName)).one();
+		int price = row.getInt("price");
+		return price;
+	}
+	
+	public JSONObject getSummary(int id) {
 	JSONArray orders = new JSONArray();
 		
 		for(Row order:session.execute(get_info_stmt.bind(id))) {
@@ -63,16 +70,20 @@ public class OrderApi extends Api {
 			//build items json Array
 			JSONArray itemsJson = new JSONArray();
 			Map<String,Integer> items = order.getMap("items", String.class, Integer.class);
+			JSONObject item = new JSONObject();
 			for(String itemName:items.keySet()) {
-				JSONObject item = new JSONObject();
 				item.put("id",itemName);
-				item.put("quanity",items.get(itemName));
+				int quantity = items.get(itemName);
+				int price = getPrice(item.getString("id"));
+				item.put("quantity",quantity);
+				item.put("price", price);
+				item.put("subtotal", quantity * price);
 				itemsJson.put(item);
 			}
-			orderJson.put("items",items);
+			orderJson.put("items",item);
 			orders.put(orderJson);
 		}
-		return orders;
+		return orders.getJSONObject(0);
 	}
 	
 	public boolean isAdmin(String user) {

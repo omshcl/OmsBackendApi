@@ -32,7 +32,7 @@ public class OrderGet extends HttpServlet {
 		JSONObject json = new JSONObject(jb.toString());
 		
 		//get id number from json
-		int id = json.getInt("id");
+		int id = Integer.parseInt(json.get("id").toString());
 
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin","*");
