@@ -22,7 +22,7 @@ public class OrderApi extends Api {
 	public OrderApi() {
 		super();
 		session = super.getSession();
-		create_order_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,items) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
+		create_order_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,items,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'OPEN_ORDER')");
 		is_admin_stmt     = session.prepare("SELECT isAdmin from users where username = ?");
 		select_next_id    = session.prepare("SELECT next from order_id");
 		inc_id_stmt       = session.prepare("UPDATE order_id set next = ? where id ='id'");
@@ -53,12 +53,12 @@ public class OrderApi extends Api {
 	
 	public JSONObject getSummary(int id) {
 	JSONArray orders = new JSONArray();
-		
+	JSONObject orderJson = new JSONObject();
+
 		for(Row order:session.execute(get_info_stmt.bind(id))) {
 			//build order json for each row 
-			JSONObject orderJson = new JSONObject();
 			String[] strColumns = {"address","channel","city","date"
-					,"firstname","lastname","payment","state","zip"};
+					,"firstname","lastname","payment","state","zip","demand_type"};
 			String[] intColumns = {"id","total"};
 			orderJson.put("id", order.getInt("id"));
 			//populate json object columns
@@ -70,8 +70,8 @@ public class OrderApi extends Api {
 			//build items json Array
 			JSONArray itemsJson = new JSONArray();
 			Map<String,Integer> items = order.getMap("items", String.class, Integer.class);
-			JSONObject item = new JSONObject();
 			for(String itemName:items.keySet()) {
+				JSONObject item = new JSONObject();
 				item.put("id",itemName);
 				int quantity = items.get(itemName);
 				int price = getPrice(item.getString("id"));
@@ -80,10 +80,10 @@ public class OrderApi extends Api {
 				item.put("subtotal", quantity * price);
 				itemsJson.put(item);
 			}
-			orderJson.put("items",item);
-			orders.put(orderJson);
+			orderJson.put("items",itemsJson);
+			return orderJson;
 		}
-		return orders.getJSONObject(0);
+		return orderJson;
 	}
 	
 	public boolean isAdmin(String user) {
@@ -95,6 +95,7 @@ public class OrderApi extends Api {
 		return row.getBool("isadmin");
 	}
 
+	//needs pagination
 	public JSONArray listOrders() {
 		JSONArray orders = new JSONArray();
 		
@@ -102,7 +103,7 @@ public class OrderApi extends Api {
 			//build order json for each row 
 			JSONObject orderJson = new JSONObject();
 			String[] strColumns = {"address","channel","city","date"
-					,"firstname","lastname","payment","state","zip"};
+					,"firstname","lastname","payment","state","zip", "demand_type"};
 			String[] intColumns = {"id","total"};
 			orderJson.put("id", order.getInt("id"));
 			//populate json object columns
@@ -139,7 +140,6 @@ public class OrderApi extends Api {
 		String payment   = json.getString("payment");
 		String address   = json.getString("address");
 		int total        = json.getInt("total"); 
-	
 		//extract item name and quanity from request
 		JSONArray items = json.getJSONArray("items");
 		Map<String,Integer> map = new HashMap<>();
