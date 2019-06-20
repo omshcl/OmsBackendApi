@@ -6,12 +6,14 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import oms.Api;
+import oms.cookies.CookieApi;
 
 public class LoginApi extends Api {
 	
 	private Session session;
 	private PreparedStatement user_lookup_stmt, is_admin_stmt;
-
+	private CookieApi cookieApi;
+	
 	public LoginApi() {
 		super();
 		session = super.getSession();

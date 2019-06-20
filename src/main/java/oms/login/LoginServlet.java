@@ -5,19 +5,24 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
+
+import oms.cookies.CookieApi;
 
 
 @WebServlet(urlPatterns = "/login")
 public class LoginServlet extends HttpServlet {
 	
 	LoginApi loginApi;
+	CookieApi cookieApi;
 	
 	public LoginServlet() {
 		loginApi = new LoginApi();
+		cookieApi = new CookieApi();
 	}
 	
 	@Override
@@ -42,11 +47,14 @@ public class LoginServlet extends HttpServlet {
 		//only query for user status if user is valid
 		if(isValid) {
 			isAdmin = loginApi.isAdmin(username);
+			Cookie sessionId = new Cookie("session",cookieApi.getId());
+			response.addCookie(sessionId);
 		}
 		//format data as json as return it
 		response.setContentType("applications/json");
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin","*");
+	
 		
 		String responseJson = new JSONObject().put("isValid",isValid).put("isAdmin", isAdmin).toString();
 		response.getWriter().write(responseJson);
