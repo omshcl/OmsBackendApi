@@ -2,6 +2,7 @@ package oms.items;
 
 import java.util.List;
 
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,14 +24,21 @@ public class ItemApi extends Api {
 	}
 	
 	public JSONArray getItems() {
-		String[] strCols = {"id","description"};
 		JSONArray jsonArray = new JSONArray();
+	
 		for (Row row :session.execute(get_items_stmt.bind()).all()) {
 			JSONObject jsonRow = new JSONObject();
-			jsonRow.put("id", row.getString("id"));
+
+			String[] strCols = {"itemdescription","shortdescription","unitofmeasure","category","subcategory","isreturnable","manufacturername"};
+			String[] intCols = {"itemid","price"};
+			
+			jsonRow.put("itemid", row.getInt("itemid"));
+			
 			for(String colName:strCols)
 				jsonRow.put(colName, row.getString(colName));
-			jsonRow.put("price", row.getInt("price"));
+			for(String colName:intCols) 
+				jsonRow.put(colName, row.getInt(colName));
+			
 			jsonArray.put(jsonRow);
 		}
 		return jsonArray;
