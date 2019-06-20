@@ -45,5 +45,28 @@ public class SimpleGetTest {
   // Assert that correct status code is returned.
   Assert.assertEquals(statusCode /*actual value*/, 200 /*expected value*/, "Correct status code returned");
   }
+  
+  //@Test
+  public void GetWeatherHeaders()
+  {
+   RestAssured.baseURI = "http://restapi.demoqa.com/utilities/weather/city";
+   RequestSpecification httpRequest = RestAssured.given();
+   Response response = httpRequest.get("/Hyderabad");
+   
+   // Reader header of a give name. In this line we will get
+   // Header named Content-Type
+   String contentType = response.header("Content-Type");
+   Assert.assertEquals(contentType /* actual value */, "application/json" /* expected value */);
+   
+   // Reader header of a give name. In this line we will get
+   // Header named Server
+   String serverType =  response.header("Server");
+   Assert.assertEquals(serverType /* actual value */, "nginx/1.12.1" /* expected value */);
+   
+   // Reader header of a give name. In this line we will get
+   // Header named Content-Encoding
+   String contentEncoding = response.header("Content-Encoding");
+   Assert.assertEquals(contentEncoding /* actual value */, "gzip" /* expected value */);
+  }
  
 }
