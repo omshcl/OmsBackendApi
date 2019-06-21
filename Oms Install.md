@@ -16,8 +16,44 @@ CREATE SYSTEM TEMPORARY TABLESPACE ICMLSSYSTSPACE8  PAGESIZE  8k BUFFERPOOL ICML
 CREATE SYSTEM TEMPORARY TABLESPACE ICMLSSYSTSPACE4  PAGESIZE  4k BUFFERPOOL ICMLBUFFER4  
 
 # installation arguments
+
+Database Vendor
+
+    DB2
+Database user name
+
+    alice
+
+Database password
+ 
+    acoount password
+
+
+Database Catalog name
+
+    OMDB
+
+
+Hostname
+
+    localhost
+
+port number
+
+    50000
+
+schema name
+
+    ALICE
+
+jar
+
+    add the jdbc db2 driver jar
+
+Additional ant arguments
  
     -XX:MaxPermSize=768m
+    
     -J-Xms1408m -J-Xmx1752m
 
 # Web Sphere
