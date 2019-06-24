@@ -16,10 +16,11 @@ import oms.Api;
 public class ItemApi extends Api {
 	
 	private Session session;
-	private PreparedStatement get_items_stmt,get_info_stmt, get_shortdescri_stmt, insert_itemsupply_stmt, search_stmt, select_next_id, inc_id_stmt, insert_item_stmt;
+	private PreparedStatement get_items_stmt,get_info_stmt, get_shortdescri_stmt, insert_itemsupply_stmt, search_stmt, select_next_id, inc_id_stmt, insert_item_stmt, get_exist_stmt;
 	public ItemApi() {
 		super();
 		session = super.getSession();
+		get_exist_stmt = session.prepare("SELECT itemid from items where itemdescription = ? allow filtering");
 		get_items_stmt = session.prepare("SELECT * from items");
 		get_info_stmt  = session.prepare("SELECT * from items where itemid = ?");
 		get_shortdescri_stmt = session.prepare("SELECT shortdescription from items where itemid = ?");
@@ -118,7 +119,13 @@ public class ItemApi extends Api {
 	}
 	
 	public void createSupply(JSONObject json) {
-		insertSupplyIntoDb(getSupplyID(), json);
+		Row r = session.execute(get_exist_stmt.bind(json.getString("itemdescription"))).one();
+		if(r != null) {
+			insertSupplyIntoDb(r.getInt("itemid"), json);
+		}
+		else {
+			insertSupplyIntoDb(getSupplyID(), json);
+		}
 	}
 	
 	private int getSupplyID() {
