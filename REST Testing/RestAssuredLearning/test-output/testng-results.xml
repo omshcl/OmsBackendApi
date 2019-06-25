@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results skipped="0" failed="1" ignored="0" total="2" passed="1">
+<testng-results skipped="0" failed="1" ignored="0" total="1" passed="0">
   <reporter-output>
   </reporter-output>
-  <suite name="Default suite" duration-ms="1391" started-at="2019-06-19T17:24:39Z" finished-at="2019-06-19T17:24:40Z">
+  <suite name="Default suite" duration-ms="1713" started-at="2019-06-24T19:49:40Z" finished-at="2019-06-24T19:49:42Z">
     <groups>
     </groups>
-    <test name="Default test" duration-ms="1391" started-at="2019-06-19T17:24:39Z" finished-at="2019-06-19T17:24:40Z">
+    <test name="Default test" duration-ms="1713" started-at="2019-06-24T19:49:40Z" finished-at="2019-06-24T19:49:42Z">
       <class name="SimpleGetTest">
-        <test-method status="FAIL" signature="GetWeatherDetails()[pri:0, instance:SimpleGetTest@457e2f02]" name="GetWeatherDetails" duration-ms="1155" started-at="2019-06-19T17:24:39Z" finished-at="2019-06-19T17:24:40Z">
-          <exception class="java.lang.AssertionError">
+        <test-method status="FAIL" signature="GetWeatherDetails1()[pri:0, instance:SimpleGetTest@39aeed2f]" name="GetWeatherDetails1" duration-ms="1675" started-at="2019-06-24T19:49:40Z" finished-at="2019-06-24T19:49:42Z">
+          <exception class="io.restassured.path.json.exception.JsonPathException">
             <message>
-              <![CDATA[Correct status code returned expected [200] but found [400]]]>
+              <![CDATA[Failed to parse the JSON document]]>
             </message>
             <full-stacktrace>
-              <![CDATA[java.lang.AssertionError: Correct status code returned expected [200] but found [400]
-at org.testng.Assert.fail(Assert.java:96)
-at org.testng.Assert.failNotEquals(Assert.java:776)
-at org.testng.Assert.assertEqualsImpl(Assert.java:137)
-at org.testng.Assert.assertEquals(Assert.java:118)
-at org.testng.Assert.assertEquals(Assert.java:652)
-at SimpleGetTest.GetWeatherDetails(SimpleGetTest.java:46)
+              <![CDATA[io.restassured.path.json.exception.JsonPathException: Failed to parse the JSON document
+at io.restassured.path.json.JsonPath$ExceptionCatcher.invoke(JsonPath.java:1002)
+at io.restassured.path.json.JsonPath$4.doParseWith(JsonPath.java:967)
+at io.restassured.path.json.JsonPath$JsonParser.parseWith(JsonPath.java:1047)
+at io.restassured.path.json.JsonPath.get(JsonPath.java:202)
+at SimpleGetTest.GetWeatherDetails1(SimpleGetTest.java:30)
 at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
 at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
@@ -45,13 +44,24 @@ at org.testng.TestNG.run(TestNG.java:1017)
 at org.testng.remote.AbstractRemoteTestNG.run(AbstractRemoteTestNG.java:115)
 at org.testng.remote.RemoteTestNG.initAndRun(RemoteTestNG.java:251)
 at org.testng.remote.RemoteTestNG.main(RemoteTestNG.java:77)
+Caused by: groovy.json.JsonException: Lexing failed on line: 1, column: 1, while reading '<', no possible valid JSON value or punctuation could be recognized.
+at groovy.json.JsonLexer.nextToken(JsonLexer.java:86)
+at groovy.json.JsonLexer$nextToken.call(Unknown Source)
+at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:47)
+at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:115)
+at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:119)
+at io.restassured.internal.path.json.ConfigurableJsonSlurper.parse(ConfigurableJsonSlurper.groovy:97)
+at io.restassured.internal.path.json.ConfigurableJsonSlurper$parse.callCurrent(Unknown Source)
+at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCallCurrent(CallSiteArray.java:51)
+at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:156)
+at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:168)
+at io.restassured.internal.path.json.ConfigurableJsonSlurper.parseText(ConfigurableJsonSlurper.groovy:83)
+at io.restassured.path.json.JsonPath$4$1.method(JsonPath.java:965)
+at io.restassured.path.json.JsonPath$ExceptionCatcher.invoke(JsonPath.java:1000)
+... 29 more
 ]]>
             </full-stacktrace>
-          </exception> <!-- java.lang.AssertionError -->
-          <reporter-output>
-          </reporter-output>
-        </test-method> <!-- GetWeatherDetails -->
-        <test-method status="PASS" signature="GetWeatherDetails1()[pri:0, instance:SimpleGetTest@457e2f02]" name="GetWeatherDetails1" duration-ms="213" started-at="2019-06-19T17:24:40Z" finished-at="2019-06-19T17:24:40Z">
+          </exception> <!-- io.restassured.path.json.exception.JsonPathException -->
           <reporter-output>
           </reporter-output>
         </test-method> <!-- GetWeatherDetails1 -->

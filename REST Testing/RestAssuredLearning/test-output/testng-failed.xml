@@ -5,7 +5,7 @@
     <classes>
       <class name="SimpleGetTest">
         <methods>
-          <include name="GetWeatherDetails"/>
+          <include name="GetWeatherDetails1"/>
         </methods>
       </class> <!-- SimpleGetTest -->
     </classes>
