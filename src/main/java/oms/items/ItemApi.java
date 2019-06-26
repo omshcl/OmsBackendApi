@@ -16,7 +16,7 @@ import oms.Api;
 public class ItemApi extends Api {
 	
 	private Session session;
-	private PreparedStatement get_items_stmt,get_info_stmt, get_shortdescri_stmt, insert_itemsupply_stmt, search_stmt, select_next_id, inc_id_stmt, insert_item_stmt, get_exist_stmt;
+	private PreparedStatement get_items_stmt,get_info_stmt, get_shortdescri_stmt, insert_itemsupply_stmt, search_stmt, select_next_id, inc_id_stmt, insert_item_stmt, get_exist_stmt, get_specific_stmt;
 	public ItemApi() {
 		super();
 		session = super.getSession();
@@ -31,12 +31,29 @@ public class ItemApi extends Api {
 
 	}
 	
+	public JSONObject getSpecific(JSONObject obj) {
+		JSONObject o = new JSONObject();
+		String query = "SELECT * from itemsupplies where itemid = " + obj.getInt("itemid") + " and productclass = \'" + obj.getString("productclass") + "\' and type = \'" + obj.getString("type") + "\' and shipnode = \'" + obj.getString("locationname") +"\';";
+		System.out.println(query);
+		get_specific_stmt = session.prepare(query);
+
+		Row row = session.execute(get_specific_stmt.bind()).one();
+		o.put("itemid", row.getInt("itemid"));
+		o.put("productclass", row.getString("productclass"));
+		o.put("eta", row.getString("eta"));
+		o.put("shipbydate", row.getString("shipbydate"));
+		o.put("shipnode", row.getString("shipnode"));
+		o.put("type", row.getString("type"));
+		o.put("quantity", row.getInt("quantity"));
+		o.put("shippingaddress", row.getString("shippingaddress"));
+		return o;
+	}
+	
 	public JSONArray getItems() {
 		JSONArray jsonArray = new JSONArray();
 	
 		for (Row row :session.execute(get_items_stmt.bind()).all()) {
 			JSONObject jsonRow = new JSONObject();
-
 			String[] strCols = {"itemdescription","shortdescription","unitofmeasure","category","subcategory","isreturnable","manufacturername"};
 			String[] intCols = {"itemid","price"};
 			

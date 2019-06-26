@@ -41,7 +41,7 @@ public class LoginServlet extends HttpServlet {
 		String username = json.getString("username");
 		String password = json.getString("password");
 		
-		//query users tatus from loginService
+		//query userstatus from loginService
 		boolean isValid = loginApi.validateUser(username, password);
 		boolean isAdmin = false;
 		//only query for user status if user is valid
