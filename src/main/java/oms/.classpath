@@ -35,6 +35,5 @@
 	<classpathentry kind="lib" path="C:/Users/Vandana Ganesh/Downloads/rest-assured-4.0.0-dist/rest-assured-4.0.0-deps/tagsoup-1.2.1 - Copy.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Vandana Ganesh/Downloads/rest-assured-4.0.0-dist/rest-assured-4.0.0-deps/tagsoup-1.2.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Vandana Ganesh/Downloads/rest-assured-4.0.0-dist/rest-assured-4.0.0.jar"/>
-	<classpathentry kind="con" path="org.testng.TESTNG_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
