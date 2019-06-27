@@ -2,46 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d9a68aca-d5d1-435a-aa4b-74be6eaafaed" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../REST Testing/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/.classpath" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/.project" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/.settings/org.eclipse.jdt.core.prefs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/src/SimpleGetTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/Default suite/Default test.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/Default suite/Default test.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/Default suite/testng-failed.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/bullet_point.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/collapseall.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/emailable-report.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/failed.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/jquery-1.7.1.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/junitreports/TEST-SimpleGetTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/navigator-bullet.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/Default test.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/classes.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/groups.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/main.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/methods-alphabetical.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/methods-not-run.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/methods.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/reporter-output.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/testng.xml.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/Default suite/toc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/old/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/passed.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/skipped.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/testng-failed.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/testng-reports.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/testng-reports.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/testng-results.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../REST Testing/RestAssuredLearning/test-output/testng.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/main/java/oms/.classpath" beforeDir="false" afterPath="$PROJECT_DIR$/../src/main/java/oms/.classpath" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/main/java/oms/items/ItemApi.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/main/java/oms/items/ItemApi.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../src/main/java/oms/login/LoginServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/../src/main/java/oms/login/LoginServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/TestLogin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/TestLogin.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -60,7 +22,7 @@
         <entry file="file://$PROJECT_DIR$/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="697">
-              <caret line="41" column="20" lean-forward="true" selection-start-line="41" selection-start-column="20" selection-end-line="41" selection-end-column="20" />
+              <caret line="41" column="20" selection-start-line="41" selection-start-column="20" selection-end-line="41" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -68,22 +30,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test/java/TestLogin.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="118">
-              <caret line="42" lean-forward="true" selection-start-line="42" selection-end-line="42" />
+            <state relative-caret-position="410">
+              <caret line="89" column="19" lean-forward="true" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#1591#1592#0" expanded="true" />
-                <element signature="e#1632#1633#0" expanded="true" />
-                <element signature="e#1675#1676#0" expanded="true" />
-                <element signature="e#1713#1714#0" expanded="true" />
-                <element signature="e#1961#1962#0" expanded="true" />
-                <element signature="e#1996#1997#0" expanded="true" />
-                <element signature="e#2050#2051#0" expanded="true" />
-                <element signature="e#2097#2098#0" expanded="true" />
-                <element signature="e#2135#2136#0" expanded="true" />
-                <element signature="e#2179#2180#0" expanded="true" />
-                <element signature="e#2231#2232#0" expanded="true" />
-                <element signature="e#2275#2276#0" expanded="true" />
+                <element signature="e#2420#2421#0" expanded="true" />
+                <element signature="e#2467#2468#0" expanded="true" />
+                <element signature="e#2420#2421#0" expanded="true" />
+                <element signature="e#2467#2468#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -128,11 +82,11 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="170" />
-    <option name="y" value="78" />
-    <option name="width" value="1783" />
-    <option name="height" value="1038" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-44" />
+    <option name="y" value="-15" />
+    <option name="width" value="1915" />
+    <option name="height" value="1103" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -140,6 +94,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -181,7 +136,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -189,6 +143,7 @@
     <property name="Repository.Attach.Annotations" value="false" />
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="Repository.Attach.Sources" value="false" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
@@ -206,22 +161,21 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.TestLogin.testLogin">
+  <component name="RunManager" selected="JUnit.TestLogin">
+    <configuration name="TestLogin" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="restassured" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="TestLogin" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="TestLogin.getShipnodes" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="restassured" />
       <option name="PACKAGE_NAME" value="" />
       <option name="MAIN_CLASS_NAME" value="TestLogin" />
       <option name="METHOD_NAME" value="getShipnodes" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestLogin.reserveARide" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="restassured" />
-      <option name="PACKAGE_NAME" value="" />
-      <option name="MAIN_CLASS_NAME" value="TestLogin" />
-      <option name="METHOD_NAME" value="reserveARide" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -237,11 +191,33 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="TestLogin.testLoginAgent" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="restassured" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="TestLogin" />
+      <option name="METHOD_NAME" value="testLoginAgent" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestLogin.testLoginInvalid" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="restassured" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="TestLogin" />
+      <option name="METHOD_NAME" value="testLoginInvalid" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.TestLogin" />
+        <item itemvalue="JUnit.TestLogin.testLoginInvalid" />
+        <item itemvalue="JUnit.TestLogin.testLoginAgent" />
         <item itemvalue="JUnit.TestLogin.testLogin" />
         <item itemvalue="JUnit.TestLogin.getShipnodes" />
-        <item itemvalue="JUnit.TestLogin.reserveARide" />
       </list>
     </recent_temporary>
   </component>
@@ -259,42 +235,41 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="TestLogin_getShipnodes - 2019.06.26 at 15h 42m 31s.xml">
-      <configuration name="TestLogin.getShipnodes" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestLogin_getShipnodes - 2019.06.26 at 15h 45m 08s.xml">
-      <configuration name="TestLogin.getShipnodes" configurationId="JUnit" />
-    </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 15h 51m 54s.xml">
+    <history-entry file="TestLogin_testLogin - 2019.06.27 at 10h 33m 26s.xml">
       <configuration name="TestLogin.testLogin" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 15h 58m 24s.xml">
+    <history-entry file="TestLogin_testLogin - 2019.06.27 at 10h 34m 11s.xml">
       <configuration name="TestLogin.testLogin" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 16h 05m 37s.xml">
+    <history-entry file="TestLogin_testLogin - 2019.06.27 at 10h 34m 39s.xml">
       <configuration name="TestLogin.testLogin" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 16h 06m 01s.xml">
+    <history-entry file="TestLogin_testLogin - 2019.06.27 at 10h 35m 12s.xml">
       <configuration name="TestLogin.testLogin" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 16h 09m 52s.xml">
+    <history-entry file="TestLogin_testLogin - 2019.06.27 at 10h 35m 26s.xml">
       <configuration name="TestLogin.testLogin" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 16h 11m 29s.xml">
-      <configuration name="TestLogin.testLogin" configurationId="JUnit" />
+    <history-entry file="TestLogin_testLoginAgent - 2019.06.27 at 10h 36m 47s.xml">
+      <configuration name="TestLogin.testLoginAgent" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 16h 12m 02s.xml">
-      <configuration name="TestLogin.testLogin" configurationId="JUnit" />
+    <history-entry file="TestLogin_testLoginInvalid - 2019.06.27 at 10h 37m 32s.xml">
+      <configuration name="TestLogin.testLoginInvalid" configurationId="JUnit" />
     </history-entry>
-    <history-entry file="TestLogin_testLogin - 2019.06.26 at 16h 13m 04s.xml">
-      <configuration name="TestLogin.testLogin" configurationId="JUnit" />
+    <history-entry file="TestLogin_testLoginInvalid - 2019.06.27 at 10h 38m 39s.xml">
+      <configuration name="TestLogin.testLoginInvalid" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="TestLogin - 2019.06.27 at 10h 39m 33s.xml">
+      <configuration name="TestLogin" configurationId="JUnit" />
+    </history-entry>
+    <history-entry file="TestLogin - 2019.06.27 at 10h 40m 00s.xml">
+      <configuration name="TestLogin" configurationId="JUnit" />
     </history-entry>
   </component>
   <component name="ToolWindowManager">
-    <frame x="136" y="63" width="1426" height="830" extended-state="0" />
-    <editor active="true" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2489019" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.23489933" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -303,7 +278,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3581662" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.35410765" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -311,7 +286,7 @@
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.3297546" />
       <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="9" />
-      <window_info anchor="bottom" id="Messages" order="10" weight="0.32234958" />
+      <window_info anchor="bottom" id="Messages" order="10" weight="0.31586403" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -323,34 +298,33 @@
     </layout>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/target/test-classes/TestLogin.class">
-      <provider selected="true" editor-type-id="text-editor" />
+    <entry file="jar://$MAVEN_REPOSITORY$/com/jayway/restassured/rest-assured/2.4.1/rest-assured-2.4.1.jar!/com/jayway/restassured/specification/RequestSpecification.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="91" column="62" selection-start-line="91" selection-start-column="62" selection-end-line="91" selection-end-column="62" />
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="697">
-          <caret line="41" column="20" lean-forward="true" selection-start-line="41" selection-start-column="20" selection-end-line="41" selection-end-column="20" />
+          <caret line="41" column="20" selection-start-line="41" selection-start-column="20" selection-end-line="41" selection-end-column="20" />
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/target/test-classes/TestLogin.class">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestLogin.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="118">
-          <caret line="42" lean-forward="true" selection-start-line="42" selection-end-line="42" />
+        <state relative-caret-position="410">
+          <caret line="89" column="19" lean-forward="true" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#1591#1592#0" expanded="true" />
-            <element signature="e#1632#1633#0" expanded="true" />
-            <element signature="e#1675#1676#0" expanded="true" />
-            <element signature="e#1713#1714#0" expanded="true" />
-            <element signature="e#1961#1962#0" expanded="true" />
-            <element signature="e#1996#1997#0" expanded="true" />
-            <element signature="e#2050#2051#0" expanded="true" />
-            <element signature="e#2097#2098#0" expanded="true" />
-            <element signature="e#2135#2136#0" expanded="true" />
-            <element signature="e#2179#2180#0" expanded="true" />
-            <element signature="e#2231#2232#0" expanded="true" />
-            <element signature="e#2275#2276#0" expanded="true" />
+            <element signature="e#2420#2421#0" expanded="true" />
+            <element signature="e#2467#2468#0" expanded="true" />
+            <element signature="e#2420#2421#0" expanded="true" />
+            <element signature="e#2467#2468#0" expanded="true" />
           </folding>
         </state>
       </provider>

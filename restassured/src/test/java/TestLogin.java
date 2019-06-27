@@ -1,29 +1,19 @@
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.RestAssured.when;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.core.IsEqual.equalTo;
 
 public class TestLogin {
 
-    public static Response response;
-    public static String jsonAsString;
 
         @BeforeClass
         public static void setupURL ()
         {
             // here we setup the default URL and API base path to use throughout the tests
-            RestAssured.baseURI = "http://986b139a.ngrok.io";
+            RestAssured.baseURI = "http://6f3cb760.ngrok.io";
         }
 
     @Test
@@ -36,44 +26,70 @@ public class TestLogin {
     }
 
     @Test
-    public void testLogin() {
+    public void testLoginAdmin() {
         User user = new User();
         user.setUsername("admin");
         user.setPassword("Admin!123");
-
-        given()
+        String login = given()
                 .contentType("application/json")
                 .body(user)
-                .when().post("/login").then().body("isValid",equalTo(true));
+                .when().post("/login").print();
+
+        String[] tokens = login.split(",|:|}");
+        String valid = tokens[1];
+        String admin = tokens[3];
+        assertEquals(valid, "true");
+        assertEquals(admin,"true");
     }
 
-    private static class Login {
-            private boolean isValid;
-            private boolean isAdmin;
+    @Test
+    public void testLoginAgent() {
+        User user = new User();
+        user.setUsername("agent");
+        user.setPassword("Agent!123");
 
-            Login(boolean isValid, boolean isAdmin) {
-                this.isValid = isValid;
-                this.isAdmin = isAdmin;
-            }
+        String login = given()
+                .contentType("application/json")
+                .body(user)
+                .when().post("/login").print();
 
-            public boolean isAdmin(){
-                return isAdmin;
-            }
-            public boolean isValid(){
-                return isValid;
-            }
+        String[] tokens = login.split(",|:|}");
+        String valid = tokens[1];
+        String admin = tokens[3];
+        assertEquals(valid, "true");
+        assertEquals(admin,"false");
+    }
+
+    @Test
+    public void testLoginInvalid() {
+        User user = new User();
+        user.setUsername("username");
+        user.setPassword("password");
+
+        String login = given()
+                .contentType("application/json")
+                .body(user)
+                .when().post("/login").print();
+
+        String[] tokens = login.split(",|:|}");
+        String valid = tokens[1];
+        String admin = tokens[3];
+        assertEquals(valid, "false");
+        assertEquals(admin,"false");
     }
 
     private class User {
             private String username;
             private String password;
 
+            //need get for serializing
             public String getUsername() {
                 return username;
             }
             public String getPassword() {
                 return password;
             }
+
             public void setUsername(String username) {
                 this.username = username;
             }
