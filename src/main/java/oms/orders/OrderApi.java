@@ -80,7 +80,6 @@ public class OrderApi extends Api {
 			JSONArray itemsJson = new JSONArray();
 			Map<Integer,Integer> items = order.getMap("items", Integer.class, Integer.class);
 			for(Integer itemid:items.keySet()) {
-				System.out.println(items);
 				JSONObject item = new JSONObject();
 				item.put("itemid",itemid);
 				int quantity = items.get(itemid);
