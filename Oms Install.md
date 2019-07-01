@@ -1,3 +1,6 @@
+06/21/19
+
+Sterling OMS v9.5
 # db2 connection
 In db2 command line processor
  
@@ -65,3 +68,19 @@ Change
 to
 
     set PERFJAVAOPTION=-Xms1024m -Xmx2048m -Xquickstart
+
+# install war
+
+ 
+    https://localhost:9043/ibm/console
+
+Applications  
+Application Typees  
+Websphere Enterpis applicatin  
+Install  
+Click smcfs.ear
+
+Fast Path
+
+
+Select all the jars and war files
