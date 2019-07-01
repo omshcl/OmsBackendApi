@@ -17,7 +17,7 @@ public class OrderApi extends Api {
 	
 	private Session session;
 	private PreparedStatement create_order_stmt, is_admin_stmt,
-	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_id_stmt, get_shortdescri_stmt,get_completed_list;
+	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_id_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt;
 
 	public OrderApi() {
 		super();
@@ -32,7 +32,23 @@ public class OrderApi extends Api {
 		get_id_stmt       = session.prepare("SELECT itemid from items where shortdescription = ? allow filtering");
 		get_shortdescri_stmt = session.prepare("SELECT shortdescription from items where itemid = ?");
 		get_completed_list = session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' allow filtering");
-
+		get_open_list = session.prepare("SELECT * from orders where demand_type = 'OPEN_ORDER' allow filtering");	
+		get_quantity_stmt = session.prepare("SELECT sum(quantity) as total from itemsupplies where type = 'onhand' and itemid = ? and productclass = 'new' allow filtering");
+		set_schedule_stmt = session.prepare("update orders set demand_type = 'SCHEDULE_ORDER' where id = ?");
+	}
+	
+	public void scheduleOrders() {
+		for(Row order:session.execute(get_open_list.bind())) {
+			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
+			for(int itemid : items.keySet()) {
+				int num = items.get(itemid);
+				int available = session.execute(get_quantity_stmt.bind(itemid)).one().getInt("total");
+				if(num > available) {
+					break;
+				}
+			}
+			session.execute(set_schedule_stmt.bind(order.getInt("id")));
+		}
 	}
 	
 	public JSONArray listCompletedOrders() {
