@@ -34,7 +34,6 @@ public class ItemApi extends Api {
 	public JSONObject getSpecific(JSONObject obj) {
 		JSONObject o = new JSONObject();
 		String query = "SELECT * from itemsupplies where itemid = " + obj.getInt("itemid") + " and productclass = \'" + obj.getString("productclass") + "\' and type = \'" + obj.getString("type") + "\' and shipnode = \'" + obj.getString("locationname") +"\';";
-		System.out.println(query);
 		get_specific_stmt = session.prepare(query);
 
 		Row row = session.execute(get_specific_stmt.bind()).one();
@@ -94,7 +93,6 @@ public class ItemApi extends Api {
 	public JSONObject getShortDescription(int itemid) {
 		for (Row row :session.execute(get_shortdescri_stmt.bind(itemid))) {
 			JSONObject jsonRow = new JSONObject();	
-			System.out.println(row);
 			jsonRow.put("shortdescription", row.getString("shortdescription"));
 			return jsonRow;
 		}
