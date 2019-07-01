@@ -35,6 +35,48 @@ public class OrderApi extends Api {
 
 	}
 	
+	public JSONArray listCompletedOrders() {
+		JSONArray orders = new JSONArray();
+
+		for(Row order:session.execute(get_completed_list.bind())) {
+			JSONObject orderJson = new JSONObject();
+
+			//build order json for each row 
+			String[] strColumns = {"address","channel","city","date"
+					,"firstname","lastname","payment","state","zip","demand_type"};
+			String[] intColumns = {"id","total"};
+			orderJson.put("id", order.getInt("id"));
+			//populate json object columns
+			for(String colName:strColumns)
+				orderJson.put(colName, order.getString(colName));
+			for(String colName:intColumns)
+				orderJson.put(colName, order.getInt(colName));
+			
+			//build items json Array
+			JSONArray itemsJson = new JSONArray();
+			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
+			Map<Integer,Integer> itemsP = order.getMap("price", Integer.class, Integer.class);
+
+			for(Integer itemid:items.keySet()) {
+				JSONObject item = new JSONObject();
+				item.put("itemid",itemid);
+				int quantity = items.get(itemid);
+				int price = getPrice(itemid);
+				item.put("quantity",quantity);
+				item.put("MSRPprice", price);
+				item.put("shortdescription", getShortDescription(itemid));
+				item.put("MSRPsubtotal", quantity * price);
+				int paidPrice = itemsP.get(itemid);
+				item.put("price", paidPrice);
+				itemsJson.put(item);
+			}
+			orderJson.put("items",itemsJson);
+			orders.put(orderJson);
+		}
+		return orders;
+	}
+
+	
 	public String getShortDescription(int itemid) {
 		for (Row row :session.execute(get_shortdescri_stmt.bind(itemid))) {
 			JSONObject jsonRow = new JSONObject();	
@@ -115,7 +157,6 @@ public class OrderApi extends Api {
 		return row.getBool("isadmin");
 	}
 
-	//needs pagination
 	public JSONArray listOrders() {
 		JSONArray orders = new JSONArray();
 
@@ -136,16 +177,19 @@ public class OrderApi extends Api {
 			//build items json Array
 			JSONArray itemsJson = new JSONArray();
 			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
-			
+			Map<Integer,Integer> itemsP = order.getMap("price", Integer.class, Integer.class);
+
 			for(Integer itemid:items.keySet()) {
 				JSONObject item = new JSONObject();
 				item.put("itemid",itemid);
 				int quantity = items.get(itemid);
 				int price = getPrice(itemid);
 				item.put("quantity",quantity);
-				item.put("MSRP", price);
+				item.put("MSRPprice", price);
 				item.put("shortdescription", getShortDescription(itemid));
 				item.put("MSRPsubtotal", quantity * price);
+				int paidPrice = itemsP.get(itemid);
+				item.put("price", paidPrice);
 				itemsJson.put(item);
 			}
 			orderJson.put("items",itemsJson);
