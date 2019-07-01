@@ -292,4 +292,6 @@ CREATE TABLE oms.id (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99PERCENTILE';
-
+use oms;
+insert into order_id (id,next)  VALUES ('id',1);
+insert into id (id,itemid)      VALUES('id',1);
