@@ -21,6 +21,12 @@ public class ItemSearch extends HttpServlet {
 	
 
 	@Override
+	/**
+	 * POST request to send filtered search requests by shipnode and item
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
 		//get data from request
 		BufferedReader reader = request.getReader();

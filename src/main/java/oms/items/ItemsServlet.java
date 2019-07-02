@@ -18,6 +18,12 @@ public class ItemsServlet extends HttpServlet {
 	
 
 	@Override
+	/**
+	 * POST request to send all item information
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		JSONArray items = itemApi.getItems();
 		response.setContentType("applications/json");

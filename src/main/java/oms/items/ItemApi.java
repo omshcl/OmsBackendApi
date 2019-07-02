@@ -20,17 +20,30 @@ public class ItemApi extends Api {
 	public ItemApi() {
 		super();
 		session = super.getSession();
-		get_exist_stmt = session.prepare("SELECT itemid from items where itemdescription = ? allow filtering");
-		get_items_stmt = session.prepare("SELECT * from items");
-		get_info_stmt  = session.prepare("SELECT * from items where itemid = ?");
-		get_shortdescri_stmt = session.prepare("SELECT shortdescription from items where itemid = ?");
-		insert_itemsupply_stmt = session.prepare("INSERT INTO itemsupplies(itemid, productclass, eta, shipbydate, shipnode, type, quantity, shippingaddress) values(?,?,?,?,?,?,?,?)");
-		select_next_id = session.prepare("SELECT itemid from id");
-		inc_id_stmt = session.prepare("UPDATE id set itemid = ? where id ='id'");
-		insert_item_stmt = session.prepare("INSERT INTO items(itemid, category, isreturnable, itemdescription, manufacturername, price, shortdescription, subcategory, unitofmeasure) values(?,?,?,?,?,?,?,?,?)");
+		//Inserts new item into item table
+		insert_item_stmt 		= session.prepare("INSERT INTO items(itemid, category, isreturnable, itemdescription, manufacturername, price, shortdescription, subcategory, unitofmeasure) values(?,?,?,?,?,?,?,?,?)");
+		//Retrieves all itemid
+		get_items_stmt 			= session.prepare("SELECT itemid from items");
+		//Gets the itemid of a specific itemdescription
+		get_exist_stmt 			= session.prepare("SELECT itemid from items where itemdescription = ? allow filtering");
+		//Retrieves row from item table associated with particular itemid
+		get_info_stmt  			= session.prepare("SELECT * from items where itemid = ?");
+		//Gets the shortdescription of an item based on itemid
+		get_shortdescri_stmt 	= session.prepare("SELECT shortdescription from items where itemid = ?");
+		//Inserts new itemsupply
+		insert_itemsupply_stmt 	= session.prepare("INSERT INTO itemsupplies(itemid, productclass, eta, shipbydate, shipnode, type, quantity, shippingaddress) values(?,?,?,?,?,?,?,?)");
+		//Gets next itemid
+		select_next_id			= session.prepare("SELECT itemid from id");
+		//Generates new itemids
+		inc_id_stmt 			= session.prepare("UPDATE id set itemid = ? where id ='id'");
 
 	}
 	
+	/**
+	 * 
+	 * @param JSONObject obj
+	 * @return JSONObject with information about a specific item
+	 */
 	public JSONObject getSpecific(JSONObject obj) {
 		JSONObject o = new JSONObject();
 		String query = "SELECT * from itemsupplies where itemid = " + obj.getInt("itemid") + " and productclass = \'" + obj.getString("productclass") + "\' and type = \'" + obj.getString("type") + "\' and shipnode = \'" + obj.getString("locationname") +"\';";
@@ -48,48 +61,45 @@ public class ItemApi extends Api {
 		return o;
 	}
 	
+	/**
+	 * 
+	 * @return JSONArray with summary of all items in table
+	 */
 	public JSONArray getItems() {
 		JSONArray jsonArray = new JSONArray();
-	
 		for (Row row :session.execute(get_items_stmt.bind()).all()) {
-			JSONObject jsonRow = new JSONObject();
-			String[] strCols = {"itemdescription","shortdescription","unitofmeasure","category","subcategory","isreturnable","manufacturername"};
-			String[] intCols = {"itemid","price"};
-			
-			jsonRow.put("itemid", row.getInt("itemid"));
-			
-			for(String colName:strCols)
-				jsonRow.put(colName, row.getString(colName));
-			for(String colName:intCols) 
-				jsonRow.put(colName, row.getInt(colName));
-			
-			jsonArray.put(jsonRow);
+			jsonArray.put(getSummary(row.getInt("itemid")));
 		}
 		return jsonArray;
 	}
 	
+	/**
+	 * 
+	 * @param itemid
+	 * @return JSONObject with summary about specific item
+	 */
 	public JSONObject getSummary(int itemid) {
-		JSONArray jsonArray = new JSONArray();
-		
-		for (Row row :session.execute(get_info_stmt.bind(itemid))) {
-			JSONObject jsonRow = new JSONObject();
+		Row row = session.execute(get_info_stmt.bind(itemid)).one();
+		JSONObject jsonRow = new JSONObject();
 
-			String[] strCols = {"itemdescription","shortdescription","unitofmeasure","category","subcategory","isreturnable","manufacturername"};
-			String[] intCols = {"itemid","price"};
+		String[] strCols = {"itemdescription","shortdescription","unitofmeasure","category","subcategory","isreturnable","manufacturername"};
+		String[] intCols = {"itemid","price"};
 			
-			jsonRow.put("itemid", row.getInt("itemid"));
+		jsonRow.put("itemid", row.getInt("itemid"));
 			
-			for(String colName:strCols)
-				jsonRow.put(colName, row.getString(colName));
-			for(String colName:intCols) 
-				jsonRow.put(colName, row.getInt(colName));
-			
-			jsonArray.put(jsonRow);
-			return jsonRow;
-		}
-		return jsonArray.getJSONObject(0);
+		for(String colName:strCols)
+			jsonRow.put(colName, row.getString(colName));
+		for(String colName:intCols) 
+			jsonRow.put(colName, row.getInt(colName));
+	
+		return jsonRow;
 	}
 	
+	/**
+	 * 
+	 * @param itemid
+	 * @return JSONObject with shortdescription
+	 */
 	public JSONObject getShortDescription(int itemid) {
 		for (Row row :session.execute(get_shortdescri_stmt.bind(itemid))) {
 			JSONObject jsonRow = new JSONObject();	
@@ -99,7 +109,13 @@ public class ItemApi extends Api {
 		return null;
 	}
 	
+	/**
+	 * Filters supply information by shipnode and item
+	 * @param JSONObject search
+	 * @return JSONArray of supply information
+	 */
 	public JSONArray restrictSearch(JSONObject search) {
+		//formats restrictions
 		String restrictItems = "";
 		String restrictShipnodes = "";
 		JSONArray items = search.getJSONArray("items");
@@ -114,8 +130,12 @@ public class ItemApi extends Api {
 			restrictShipnodes += "'" + obj.getString("locationname") + "\', ";
 		}
 		restrictShipnodes = restrictShipnodes.substring(0,restrictShipnodes.length() - 2);
+		
+		//formats query
 		String query = "SELECT * from itemsupplies where itemid in (" + restrictItems + ") " + "and shipnode in (" + restrictShipnodes + ") allow filtering;";
 		search_stmt = session.prepare(query);
+		
+		//fills jsonArray with relevent searches
 		JSONArray jsonArray = new JSONArray();
 		for (Row row : session.execute(search_stmt.bind())) {
 			JSONObject jsonRow = new JSONObject();
@@ -126,13 +146,15 @@ public class ItemApi extends Api {
 				jsonRow.put(colName, row.getString(colName));
 			for(String colName:intCols) 
 				jsonRow.put(colName, row.getInt(colName));
-			
 			jsonArray.put(jsonRow);
 		}
-		
 		return jsonArray;
 	}
 	
+	/**
+	 * Manages creation of new supply
+	 * @param json
+	 */
 	public void createSupply(JSONObject json) {
 		Row r = session.execute(get_exist_stmt.bind(json.getString("itemdescription"))).one();
 		if(r != null) {
@@ -143,6 +165,10 @@ public class ItemApi extends Api {
 		}
 	}
 	
+	/**
+	 * Generates new supply ids
+	 * @return int supplyid
+	 */
 	private int getSupplyID() {
 		Row row = session.execute(select_next_id.bind()).one();
 		int id = row.getInt("itemid");
@@ -151,7 +177,13 @@ public class ItemApi extends Api {
 		return id;
 	}
 	
+	/**
+	 * Inserts new supply from front end into db
+	 * @param itemid
+	 * @param json
+	 */
 	private void insertSupplyIntoDb(int itemid, JSONObject json) {
+		//insert supply information into itemsupplies table
 		String productclass   = json.getString("productclass");
 		String eta      = json.getString("eta");
 		String shipbydate = json.getString("shipbydate");
@@ -160,6 +192,7 @@ public class ItemApi extends Api {
 		int quantity      = json.getInt("quantity");
 		String shippingaddress     = json.getString("shippingaddress");
 		session.execute(insert_itemsupply_stmt.bind(itemid,productclass,eta,shipbydate,shipnode,type,quantity,shippingaddress));
+		//insert item information into item table
 		String category = json.getString("category");
 		String isreturnable = json.getString("isreturnable");
 		String itemdescription = json.getString("itemdescription");
@@ -169,6 +202,5 @@ public class ItemApi extends Api {
 		String subcategory = json.getString("subcategory");
 		String unitofmeasure = json.getString("unitofmeasure");
 		session.execute(insert_item_stmt.bind(itemid, category, isreturnable, itemdescription, manufacturername, price, shortdescription, subcategory, unitofmeasure));
-
 	}
 }

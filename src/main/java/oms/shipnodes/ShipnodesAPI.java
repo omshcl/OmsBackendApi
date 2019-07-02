@@ -20,12 +20,16 @@ public class ShipnodesAPI extends Api {
 	public ShipnodesAPI() {
 		super();
 		session = super.getSession();
+		//Selects all shipnodes
 		shipnodes_list_stmt = session.prepare("SELECT *  FROM shipnodes;");
 	}
 	
+	/**
+	 * 
+	 * @return JSONArray of all shipnodes
+	 */
 	public JSONArray getShipnodes() {
 		JSONArray jsonArray = new JSONArray();
-	
 		for (Row row :session.execute(shipnodes_list_stmt.bind()).all()) {
 			JSONObject loc = new JSONObject();
 			loc.put("locationname",row.getString("locationname"));

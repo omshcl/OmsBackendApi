@@ -19,6 +19,12 @@ public class OrderList extends HttpServlet {
 	}
 
 	@Override
+	/**
+	 * GET request to list all orders
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		JSONArray orders = orderApi.listOrders();
 		response.setContentType("applications/json");

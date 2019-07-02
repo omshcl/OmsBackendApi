@@ -19,6 +19,12 @@ public class CompletedList extends HttpServlet {
 	}
 
 	@Override
+	/**
+	 * GET Request that sends all complete_orders
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		JSONArray orders = orderApi.listCompletedOrders();
 		response.setContentType("applications/json");

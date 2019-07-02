@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-
 @WebServlet(urlPatterns="/supply/new")
 public class ItemCreate extends HttpServlet {
 
@@ -18,9 +17,14 @@ public class ItemCreate extends HttpServlet {
 	
 	public ItemCreate() {
 		itemApi = new ItemApi();
-		
 	}
 	
+	/**
+	 * POST request to add new supply to itemsupplies table
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
 		//get data from request
 		BufferedReader reader = request.getReader();

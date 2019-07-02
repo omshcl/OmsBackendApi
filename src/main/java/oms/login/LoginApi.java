@@ -17,15 +17,28 @@ public class LoginApi extends Api {
 	public LoginApi() {
 		super();
 		session = super.getSession();
+		//Selects all user information
 		user_lookup_stmt = session.prepare("SELECT *  FROM users where username = ? and password = ? ALLOW FILTERING;");
+		//Gets admin status given username
 		is_admin_stmt    = session.prepare("SELECT isAdmin from users where username = ?");
 	}
 	
+	/**
+	 * Checks db to see if user is valid
+	 * @param user
+	 * @param password
+	 * @return boolean
+	 */
 	public boolean validateUser(String user,String password) {
 		ResultSet res = session.execute(user_lookup_stmt.bind(user,password));
 		return !res.isExhausted();
 	}
 	
+	/**
+	 * Checks db to see if user is an admin
+	 * @param user
+	 * @return boolean
+	 */
 	public boolean isAdmin(String user) {
 		ResultSet res = session.execute(is_admin_stmt.bind(user));
 		Row row = res.one();

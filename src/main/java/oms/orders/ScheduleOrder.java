@@ -19,6 +19,12 @@ public class ScheduleOrder extends HttpServlet {
 	}
 
 	@Override
+	/**
+	 * GET request to mark orders as scheduled based on availability
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		orderApi.scheduleOrders();

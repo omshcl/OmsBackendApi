@@ -20,6 +20,12 @@ public class OrderGet extends HttpServlet {
 		orderApi = new OrderApi();
 	}
 	
+	/**
+	 * POST Request to get information about a particular order
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
 		//get data from request
 		BufferedReader reader = request.getReader();

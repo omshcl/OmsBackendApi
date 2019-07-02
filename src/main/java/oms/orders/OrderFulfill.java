@@ -20,6 +20,12 @@ public class OrderFulfill extends HttpServlet {
 		orderApi = new OrderApi();
 	}
 	
+	/**
+	 * POST Request to mark orders with a delivery date 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
 		//get data from request
 		BufferedReader reader = request.getReader();

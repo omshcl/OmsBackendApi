@@ -18,6 +18,12 @@ public class ShipnodesServlet extends HttpServlet {
 	
 
 	@Override
+	/**
+	 * GET Request for all shipnodes
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		JSONArray shipnodes = shipnodesAPI.getShipnodes();
 		response.setContentType("applications/json");

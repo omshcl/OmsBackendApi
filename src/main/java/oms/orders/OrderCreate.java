@@ -21,6 +21,12 @@ public class OrderCreate extends HttpServlet {
 		
 	}
 	
+	/**
+	 * POST request to add orders to orders table
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
 		//get data from request
 		BufferedReader reader = request.getReader();

@@ -13,7 +13,6 @@ import org.json.JSONObject;
 
 import oms.cookies.CookieApi;
 
-
 @WebServlet(urlPatterns = "/login")
 public class LoginServlet extends HttpServlet {
 	
@@ -26,6 +25,12 @@ public class LoginServlet extends HttpServlet {
 	}
 	
 	@Override
+	/**
+	 * POST Request to validate login
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		//get data from request
 		BufferedReader reader = request.getReader();
@@ -55,7 +60,6 @@ public class LoginServlet extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin","*");
 	
-		
 		String responseJson = new JSONObject().put("isValid",isValid).put("isAdmin", isAdmin).toString();
 		response.getWriter().write(responseJson);
 	}

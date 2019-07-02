@@ -20,6 +20,12 @@ public class ItemsGetInfo extends HttpServlet {
 		itemApi = new ItemApi();
 	}
 	
+	/**
+	 * POST request to return summary about specific item
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException{
 		//get data from request
 		BufferedReader reader = request.getReader();

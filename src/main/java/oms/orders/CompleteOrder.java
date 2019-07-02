@@ -19,6 +19,12 @@ public class CompleteOrder extends HttpServlet {
 	}
 
 	@Override
+	/**
+	 * GET Request that checks if an order can be completed and completes it
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		orderApi.completeOrder();
