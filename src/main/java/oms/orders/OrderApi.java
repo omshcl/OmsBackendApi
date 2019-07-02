@@ -2,7 +2,8 @@ package oms.orders;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.text.SimpleDateFormat;  
+import java.util.Date; 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,7 +19,7 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt, is_admin_stmt,
 	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_id_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt;
+	set_fulfill_stmt, set_final_stmt, reopen_stmt, complete_stmt, get_available_stmt, update_stock_stmt;
 
 	public OrderApi() {
 		super();
@@ -37,6 +38,55 @@ public class OrderApi extends Api {
 		get_quantity_stmt = session.prepare("SELECT sum(quantity) as total from itemsupplies where type = 'onhand' and itemid = ? and productclass = 'new' allow filtering");
 		set_schedule_stmt = session.prepare("update orders set demand_type = 'SCHEDULE_ORDER' where id = ?");
 		set_fulfill_stmt = session.prepare("update orders set demand_type = 'ALLOCATE_ORDER', delivery_date = ? where id = ?");
+		set_final_stmt = session.prepare("select * from orders where demand_type = 'ALLOCATE_ORDER' and delivery_date = ? allow filtering");
+		reopen_stmt = session.prepare("update orders set demand_type = 'OPEN_ORDER' where id = ?");
+		complete_stmt = session.prepare("update orders set demand_type = 'COMPLETE_ORDER' where id = ?");
+		get_available_stmt = session.prepare("select * from itemsupplies where itemid = ? allow filtering");
+		update_stock_stmt = session.prepare("update itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
+	}
+
+	public void completeOrder() {
+		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");  
+	    Date date = new Date();
+	    String d = formatter.format(date);
+		for(Row order:session.execute(set_final_stmt.bind(d))) {
+			Boolean fillable = true;
+			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
+			for(int itemid : items.keySet()) {
+				int num = items.get(itemid);
+				int available = session.execute(get_quantity_stmt.bind(itemid)).one().getInt("total");
+				if(num > available) {
+					fillable = false;
+					break;
+				}
+			}
+			if(fillable) {
+				session.execute(complete_stmt.bind(order.getInt("id")));
+				for(int itemid : items.keySet()) {
+					int q = items.get(itemid);
+					for(Row i: session.execute(get_available_stmt.bind(itemid))) {		
+						if(q > 0) {
+							int stock = i.getInt("quantity");
+							if(stock >= q) {
+								session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
+								break;
+							}
+							else {
+								q = q - stock;
+								session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
+							}
+						}
+						else {
+							break;
+						}
+					}
+				}
+			}
+			else { 
+				session.execute(reopen_stmt.bind(order.getInt("id")));
+				}
+	    }
+	
 	}
 	
 	public void fulfill(JSONObject json) {
@@ -45,15 +95,19 @@ public class OrderApi extends Api {
 	
 	public void scheduleOrders() {
 		for(Row order:session.execute(get_open_list.bind())) {
+			Boolean fillable = true;
 			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
 			for(int itemid : items.keySet()) {
 				int num = items.get(itemid);
 				int available = session.execute(get_quantity_stmt.bind(itemid)).one().getInt("total");
 				if(num > available) {
+					fillable = false;
 					break;
 				}
 			}
-			session.execute(set_schedule_stmt.bind(order.getInt("id")));
+			if(fillable) {
+				session.execute(set_schedule_stmt.bind(order.getInt("id")));
+			}
 		}
 	}
 	
