@@ -5,7 +5,7 @@ nohup ./cassandra -R -f > cassandralog &
 echo "[cassandra] started"
 sleep 16
 echo "[db] initializing database"
-python cqlsh.py --file=../../setup.txt
+python2 cqlsh.py --file=../../setup.txt
 echo "[db] created table columns"
 echo "[backend] starting tomcat services"
 cd ../../
