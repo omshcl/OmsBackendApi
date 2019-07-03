@@ -6,7 +6,7 @@ The oms docker container supports the running of the entire backend. It contains
 Building the container in the OmsBackendApi directory
 
     docker build -t oms . 
-Running the container runs on port 8080
+Running the container on port 8080
 
     docker run -p 8080:8080 -it 
     
