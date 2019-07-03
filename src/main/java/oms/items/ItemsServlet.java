@@ -32,8 +32,5 @@ public class ItemsServlet extends HttpServlet {
 	}
 	
 	
-	@Override
-	public void destroy() {
-		itemApi.closeSession();
-	}
+	
 }

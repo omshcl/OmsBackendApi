@@ -5,6 +5,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -39,10 +40,9 @@ public class LoginApi extends Api {
 	 * @return boolean
 	 */
 	public boolean validateUser(String user,String password) {
-		ResultSet res = session.execute(user_lookup_stmt.bind(user,password));
 		String hash = getHash(password);
-		System.out.println("HASH");
 		System.out.println(hash);
+		ResultSet res = session.execute(user_lookup_stmt.bind(user,hash));
 		return !res.isExhausted();
 	}
 	
@@ -60,9 +60,6 @@ public class LoginApi extends Api {
 		return row.getBool("isadmin");
 	}
 	
-	public void closeSession() {
-		session.close();
-	}
 	
 	/**
 	 * Hashes user password uses PBKDF2 algorithm which is industry best practices
@@ -79,13 +76,17 @@ public class LoginApi extends Api {
 		try {
 			factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 			byte[] hash = factory.generateSecret(spec).getEncoded();
-			return hash.toString();
-			
+			// encode the password hash bytes as a string to store in db
+			// explicity states locale to make platform independent
+			return new String(hash,"US-ASCII");			
 		} catch (NoSuchAlgorithmException e) {
 			System.out.println("PBKDF2 algorithm not found");
 			e.printStackTrace();
 		} catch (InvalidKeySpecException e) {
 			System.out.println("Invalid Key Spec");
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			System.out.println("locale US-ASCII not found");
 			e.printStackTrace();
 		}
 		return null;

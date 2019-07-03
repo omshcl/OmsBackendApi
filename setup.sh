@@ -2,7 +2,7 @@
 # start the cassandra server 
 echo "[cassandra] spawning cassandra"
 cd root/apache-cassandra-3.11.4/bin/ || exit
-nohup ./cassandra -R -f > cassandralog &
+./cassandra -R -f &
 echo "[cassandra] started"
 sleep 16
 echo "[db] initializing database"

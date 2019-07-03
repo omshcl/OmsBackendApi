@@ -309,7 +309,4 @@ public class OrderApi extends Api {
 	}
 	
 	
-	public void closeSession() {
-		session.close();
-	}
 }

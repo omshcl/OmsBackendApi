@@ -32,9 +32,4 @@ public class OrderList extends HttpServlet {
 		response.getWriter().write(orders.toString());
 	}
 	
-	@Override
-	public void destroy() {
-		orderApi.closeSession();
-	}
-
 }

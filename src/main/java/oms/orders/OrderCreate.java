@@ -43,8 +43,5 @@ public class OrderCreate extends HttpServlet {
 		response.getWriter().write(responseJson);
 	}
 	
-	@Override
-	public void destroy() {
-		orderApi.closeSession();
-	}
+	
 }

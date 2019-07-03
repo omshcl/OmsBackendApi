@@ -203,8 +203,4 @@ public class ItemApi extends Api {
 		String unitofmeasure = json.getString("unitofmeasure");
 		session.execute(insert_item_stmt.bind(itemid, category, isreturnable, itemdescription, manufacturername, price, shortdescription, subcategory, unitofmeasure));
 	}
-	
-	public void closeSession() {
-		session.close();
-	}
 }

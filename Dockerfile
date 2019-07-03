@@ -8,5 +8,7 @@ RUN pip3 install requests pandas cassandra-driver
 RUN cd && curl "http://apache.claz.org/cassandra/3.11.4/apache-cassandra-3.11.4-bin.tar.gz" > cassandra.tar.gz && tar xvf cassandra.tar.gz
 COPY . /root/
 EXPOSE 8080
-ENTRYPOINT ["/bin/bash"]
-#ENTRYPOINT ["/root/setup.sh"]
+EXPOSE 9042
+EXPOSE 9160
+#NTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/root/setup.sh"]

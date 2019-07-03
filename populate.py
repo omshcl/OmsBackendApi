@@ -5,11 +5,13 @@ import json
 import urllib.request
 import random
 import pandas 
+# starts the apache tomcat7 server 
 print ("starting tomcat server")
 cmd =["mvn","tomcat7:run"]
 subprocess.Popen(cmd)
 print ("waiting for tomcat7 to start")
 
+# lists of default shipnodes
 SHIPNODES = [
     "Austin",
     "El Paso",
@@ -34,6 +36,7 @@ mock_data = pandas.read_csv("mock.csv")
 time.sleep(40)
 
 
+# adds item into database using Rest API
 def addItem(data):
     myurl = 'http://localhost:8080/supply/new'
     req = urllib.request.Request(myurl)
@@ -45,6 +48,7 @@ def addItem(data):
     print(response)
 
 
+# creates the list of items from sample data
 def createItems():
     for item in ITEMDATA:
         sample = mock_data.sample().astype('str').values[0]
@@ -67,6 +71,7 @@ def createItems():
         addItem(data)
 
 
+# adds order to database using rest API
 def addOrder(data):
     myurl = 'http://localhost:8080/orders/new'
     req = urllib.request.Request(myurl)
@@ -77,19 +82,23 @@ def addOrder(data):
     response = urllib.request.urlopen(req, jsondataasbytes)
     print(response)
 
-
-def createOrders():
+#create orders default is 1000
+def createOrders(orders=1000):
     for order in range(1000):
         quanities = []
         prices = []
+        # keep tracking of the total price of order
         total = 0
+        # generate from 1-10 items for each order
         for _ in  range(random.randrange(10)+1):
             orderid = random.randrange(len(ITEMDATA)-1)+1
             quantity = random.randrange(20)
             price    = random.randrange(10000)
             quanities.append({"itemid":orderid,"quantity":quantity})
             prices.append({"itemid":orderid,"price":price})
+            # add current items price to total
             total+= price*quantity 
+        # get random sample from mock.csv
         sample = mock_data.sample().astype('str').values[0]
         data = {"channel":random.choice(["Online","Phone","Fax"])
         ,"date":"06/23/19"
@@ -101,7 +110,6 @@ def createOrders():
         ,"payment":random.choice(["Credit","Debit","Cash"])
         ,"address":sample[2]
         ,"total":total
-        # generate random quantity of orders
         ,"quantity":quanities
         ,"price":prices}
         addOrder(data)
