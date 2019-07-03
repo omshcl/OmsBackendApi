@@ -16,3 +16,4 @@ Running the container runs on port 8080
 - [setup.sh](setup.sh)         A script that starts the Cassandra Database and the python populate service
 - [populate.py](populate.py)   A python script that populates the database tables and launches the tomcat server
 - [setup.txt](setup.txt)       File that specifies initial table schema 
+- [mock.csv](mock.csv)         Mock data used for populating db
