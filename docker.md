@@ -12,7 +12,7 @@ Running the container on port 8080
     
 
 # Files
-- [Dockerfile](Dockerfile)     The file that specifies how the container should be built
+- [Dockerfile](Dockerfile)     The file that specifies how the container should be built calls `setup.sh`
 - [setup.sh](setup.sh)         A script that starts the Cassandra Database and the python populate service
 - [populate.py](populate.py)   A python script that populates the database tables and launches the tomcat server
 - [setup.txt](setup.txt)       File that specifies initial table schema 
