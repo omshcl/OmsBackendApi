@@ -8,7 +8,7 @@ Building the container in the OmsBackendApi directory
     docker build -t oms . 
 Running the container on port 8080
 
-    docker run -p 8080:8080 -it 
+    docker run -p 8080:8080 -it oms
     
 
 # Files
