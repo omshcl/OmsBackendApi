@@ -307,4 +307,9 @@ public class OrderApi extends Api {
 		int id = json.getInt("id");
 		insertOrderIntoDb(id,json);
 	}
+	
+	
+	public void closeSession() {
+		session.close();
+	}
 }

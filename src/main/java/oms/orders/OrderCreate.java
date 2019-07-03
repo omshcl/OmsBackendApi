@@ -13,12 +13,11 @@ import org.json.JSONObject;
 
 @WebServlet(urlPatterns="/orders/new")
 public class OrderCreate extends HttpServlet {
-
+	
 	private  OrderApi orderApi;
 	
 	public OrderCreate() {
 		orderApi = new OrderApi();
-		
 	}
 	
 	/**
@@ -44,4 +43,8 @@ public class OrderCreate extends HttpServlet {
 		response.getWriter().write(responseJson);
 	}
 	
+	@Override
+	public void destroy() {
+		orderApi.closeSession();
+	}
 }

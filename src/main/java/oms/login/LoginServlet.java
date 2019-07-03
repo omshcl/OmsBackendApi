@@ -64,4 +64,8 @@ public class LoginServlet extends HttpServlet {
 		response.getWriter().write(responseJson);
 	}
 	
+	@Override
+	public void destroy() {
+		loginApi.closeSession();
+	}
 }

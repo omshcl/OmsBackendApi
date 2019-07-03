@@ -50,7 +50,7 @@ def createItems():
         sample = mock_data.sample().astype('str').values[0]
         data = {"productclass":'new'
         ,"eta":'6/29/19',"type":'pipeline'
-        ,"quantity":10
+        ,"quantity":random.randrange(50)+1
         # get random address
         ,"shippingaddress":sample[2]
         # get category from item data

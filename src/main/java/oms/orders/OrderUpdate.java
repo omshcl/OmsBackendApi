@@ -44,4 +44,9 @@ public class OrderUpdate extends HttpServlet {
 		response.getWriter().write(responseJson);
 	}
 	
+	@Override
+	public void destroy() {
+		orderApi.closeSession();
+	}
+
 }

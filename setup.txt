@@ -210,4 +210,4 @@ insert into shipnodes (locationname) VALUES('Chicago');
 insert into shipnodes (locationname) VALUES('Buffalo');
 
 insert into users (username,isadmin,password) VALUES('admin',true,'Admin!123');
-insert into users (username,isadmin,password) VALUES('agent',fquialse,'Agent!123');
+insert into users (username,isadmin,password) VALUES('agent',false,'Agent!123');

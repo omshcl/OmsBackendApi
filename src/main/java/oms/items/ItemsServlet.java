@@ -31,4 +31,9 @@ public class ItemsServlet extends HttpServlet {
 		response.getWriter().write(items.toString());
 	}
 	
+	
+	@Override
+	public void destroy() {
+		itemApi.closeSession();
+	}
 }
