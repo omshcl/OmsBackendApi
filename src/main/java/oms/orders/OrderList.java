@@ -31,4 +31,5 @@ public class OrderList extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write(orders.toString());
 	}
+	
 }

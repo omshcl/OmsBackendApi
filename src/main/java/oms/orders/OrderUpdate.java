@@ -43,5 +43,5 @@ public class OrderUpdate extends HttpServlet {
 		String responseJson = new JSONObject().put("sucesss","true").toString();
 		response.getWriter().write(responseJson);
 	}
-	
+
 }
