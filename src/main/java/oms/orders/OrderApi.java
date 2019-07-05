@@ -19,7 +19,7 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, set_final_stmt, reopen_stmt, complete_stmt, get_available_stmt, update_stock_stmt;
+	set_fulfill_stmt, set_final_stmt, reopen_stmt, complete_stmt, get_available_stmt, update_stock_stmt, get_max_orderid;
 
 	public OrderApi() {
 		super();
@@ -32,8 +32,11 @@ public class OrderApi extends Api {
 		list_items_stmt   		= session.prepare("SELECT * from orders");
 		//Retrieves row from order table about specific order
 		get_info_stmt     		= session.prepare("SELECT * from orders where id = ?");
+		//Finds maximum order id
+		get_max_orderid			= session.prepare("SELECT max(id) as maxid from orders");
 		//Selects COMPLETE_ORDERs
-		get_completed_list 		= session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' allow filtering");
+		get_completed_list 		= session.prepare("SELECT * from orders where id > ? allow filtering");
+//		get_completed_list 		= session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' and id > ? allow filtering");
 		//Selects orders that are OPEN_ORDERs
 		get_open_list			= session.prepare("SELECT * from orders where demand_type = 'OPEN_ORDER' allow filtering");
 		//Selects ALLOCATE_ORDERs of certain delivery date to prepare to complete
@@ -195,9 +198,11 @@ public class OrderApi extends Api {
 	 * 
 	 * @return  JSONArray with JSONObjects representing each completed order
 	 */
-	public JSONArray listCompletedOrders() {
+	public JSONArray listCompletedOrders(int numRows) {
 		JSONArray orders = new JSONArray();
-		for(Row order:session.execute(get_completed_list.bind())) {
+		int max = session.execute(get_max_orderid.bind()).one().getInt("maxid");
+		int start = max - numRows;
+		for(Row order:session.execute(get_completed_list.bind(start))) {
 			JSONObject orderJson = new JSONObject();
 			addToObject(order, orderJson);
 			orders.put(orderJson);
