@@ -33,10 +33,9 @@ public class OrderApi extends Api {
 		//Retrieves row from order table about specific order
 		get_info_stmt     		= session.prepare("SELECT * from orders where id = ?");
 		//Finds maximum order id
-		get_max_orderid			= session.prepare("SELECT max(id) as maxid from orders");
+		get_max_orderid			= session.prepare("SELECT max(id) as maxid from orders where demand_type = 'COMPLETE_ORDER' allow filtering");
 		//Selects COMPLETE_ORDERs
-		get_completed_list 		= session.prepare("SELECT * from orders where id > ? allow filtering");
-//		get_completed_list 		= session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' and id > ? allow filtering");
+		get_completed_list 		= session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' and id > ? allow filtering");
 		//Selects orders that are OPEN_ORDERs
 		get_open_list			= session.prepare("SELECT * from orders where demand_type = 'OPEN_ORDER' allow filtering");
 		//Selects ALLOCATE_ORDERs of certain delivery date to prepare to complete
