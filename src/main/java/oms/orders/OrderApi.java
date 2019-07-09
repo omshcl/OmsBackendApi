@@ -67,7 +67,7 @@ public class OrderApi extends Api {
 	 */
 	public void completeOrder() {
 		//identifies today's date in MM/dd/yyyy format
-		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");  
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");  
 	    Date date = new Date();
 	    String d = formatter.format(date);
 	    
