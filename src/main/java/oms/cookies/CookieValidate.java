@@ -23,25 +23,28 @@ public class CookieValidate extends HttpServlet {
 		cookieApi = new CookieApi();
 	}
 	
+	//valid user based off of stored cookie information
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		//get data from request
-		
-		System.out.println("GOT Request");
-		
+		//get data from request	
 		Cookie[] cookies = request.getCookies();
+		String value = null;
 		for(Cookie cookie:cookies) {
-			System.out.println(cookie.getName());
-			System.out.println(cookie.getValue());
+			String name = cookie.getName();
+			value = cookie.getValue();
+			if(name.equals("session")) {
+				break;
+			}
 		}
+		System.out.println(value);
+		boolean valid = cookieApi.isSession(value);
 		response.setContentType("applications/json");
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin","*");
-	
+		String responseJson = new JSONObject().put("valid",valid).toString();
+		response.getWriter().write(responseJson);
 		
 	
 	}
-	
-	
 	
 }

@@ -11,7 +11,7 @@ public class Api {
 
 	public Api() {
 		if(cluster == null) {
-			cluster = Cluster.builder().addContactPoint("127.0.0.1").build();
+			cluster = Cluster.builder().addContactPoint("cassandra").build();
 			cluster.getConfiguration().getSocketOptions().setReadTimeoutMillis(READOUT_TIME);
 			session = cluster.connect("oms");
 		}

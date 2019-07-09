@@ -25,4 +25,8 @@ public class CookieApi {
 		keys.put(id, true);
 		return id;
 	}
+	
+	public boolean isSession(String session) {
+		return (null == keys.get(session));
+	}
 }

@@ -62,7 +62,7 @@ public class LoginApi extends Api {
 	
 	
 	/**
-	 * Hashes user password uses PBKDF2 algorithm which is industry best practices
+	 * Hashes user password using PBKDF2 algorithm which is industry best practie
 	 * Also uses a salt value to prevent the use of Rainbow Tables on hashes
 	 * @param pass user password
 	 * @return the hashed password
