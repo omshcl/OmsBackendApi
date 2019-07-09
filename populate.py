@@ -172,7 +172,7 @@ def createOrders(num,ordertype="OPEN_ORDER"):
         # get random sample from mock.csv
         sample = mock_data.sample().astype('str').values[0]
         orderId = getNextOrderId()
-        data = [orderId, random.choice(["Online","Phone","Fax"]),"2019-07-09",sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","Debit","Cash"]),total,sample[2],quanities,prices]
+        data = [orderId, random.choice(["Online","Phone","Fax"]),"2019-07-09",sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices]
         create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'"+ordertype+"')")
         session.execute(create_stmt,data)
 
