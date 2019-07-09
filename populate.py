@@ -23,7 +23,10 @@ cluster = Cluster(["cassandra"])
 session = cluster.connect()
 
 session.default_timeout = None
-session.execute("drop keyspace oms;")
+try:
+    session.execute("drop keyspace oms;")
+except Exception:
+    print("failed to drop table")
 session.execute("CREATE KEYSPACE oms WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3'}  AND durable_writes = true;")
 session = cluster.connect("oms")
 
@@ -159,11 +162,11 @@ def createOrders(num,ordertype="OPEN_ORDER"):
         total = 0
         # generate from 1-10 items for each order
         for _ in  range(random.randrange(10)+1):
-            orderid = random.randrange(len(ITEMDATA))+1
+            itemid = random.randrange(len(ITEMDATA)-1)+1
             quantity = random.randrange(20)
             price    = random.randrange(10000)
-            quanities[orderid] = quantity
-            prices[orderid] = price
+            quanities[itemid] = quantity
+            prices[itemid] = price
             # add current items price to total
             total+= price*quantity 
         # get random sample from mock.csv
