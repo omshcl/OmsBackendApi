@@ -162,7 +162,7 @@ def createOrders(num,ordertype="OPEN_ORDER"):
         total = 0
         # generate from 1-10 items for each order
         for _ in  range(random.randrange(10)+1):
-            itemid = random.randrange(len(ITEMDATA)-1)+1
+            itemid = random.randrange(len(ITEMDATA))+1
             quantity = random.randrange(20)
             price    = random.randrange(10000)
             quanities[itemid] = quantity
