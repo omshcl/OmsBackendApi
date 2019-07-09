@@ -5,20 +5,15 @@ The oms docker container supports the running of the entire backend. It contains
 # Usage
 Building the container in the OmsBackendApi directory
 
-    docker build -t oms . 
+    docker-compose build 
 Running the container on port 8080
 
-    docker run -p 8080:8080 -d -t oms
+    docker-compose up
     
-
-Docker view logs use ps to find container id
- 
-    docker ps
-    docker logs <container name>
 
 # Files
 - [Dockerfile](Dockerfile)     The file that specifies how the container should be built calls `setup.sh`
-- [setup.sh](setup.sh)         A script that starts the Cassandra Database and the python populate service
+- [Docker Compose](docker-compose.yml)Docker compose yaml file that specifies how containers are combined
+- [setup.sh](setup.sh)         A script that starts the python populate service
 - [populate.py](populate.py)   A python script that populates the database tables and launches the tomcat server
-- [setup.txt](setup.txt)       File that specifies initial table schema 
 - [mock.csv](mock.csv)         Mock data used for populating db
