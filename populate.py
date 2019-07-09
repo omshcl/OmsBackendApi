@@ -177,8 +177,8 @@ def createOrders(num,ordertype="OPEN_ORDER"):
         session.execute(create_stmt,data)
 
 print("create orders")
-createOrders(5)
 createOrders(100,ordertype="COMPLETE_ORDER")
+createOrders(5)
 print("Create items")
 createItems()
 print ("starting tomcat server")
