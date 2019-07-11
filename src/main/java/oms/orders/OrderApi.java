@@ -25,7 +25,7 @@ public class OrderApi extends Api {
 		super();
 		session = super.getSession();
 		//Insert into the orders table
-		create_order_stmt 		= session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'OPEN_ORDER')");
+		create_order_stmt 		= session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type,shipnode,ordertype,fulfilled) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 		//Selects the next order id
 		select_next_id   		= session.prepare("SELECT next from order_id");
 		//Gets entire order table
@@ -45,7 +45,7 @@ public class OrderApi extends Api {
 		//Sets an order to SCHEDULE_ORDER
 		set_schedule_stmt 		= session.prepare("UPDATE orders set demand_type = 'SCHEDULE_ORDER' where id = ?");
 		//Sets an order to ALLOCATE_ORDER and sets delivery_date
-		set_fulfill_stmt 		= session.prepare("UPDATE orders set demand_type = 'ALLOCATE_ORDER', delivery_date = ? where id = ?");
+		set_fulfill_stmt 		= session.prepare("UPDATE orders set demand_type = 'ALLOCATE_ORDER' where id = ?");
 		//Resets a specific order to OPEN_ORDER status
 		reopen_stmt 			= session.prepare("UPDATE orders set demand_type = 'OPEN_ORDER' where id = ?");
 		//Completes a specific order
@@ -55,7 +55,7 @@ public class OrderApi extends Api {
 		//changes stock of item
 		update_stock_stmt 		= session.prepare("UPDATE itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
 		//Finds the number of new, onhand stock of a certain item
-		get_quantity_stmt 		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = 'onhand' and itemid = ? and productclass = 'new' allow filtering");
+		get_quantity_stmt 		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = ? and itemid = ? and productclass = 'new' allow filtering");
 		//Gets price of a specific item
 		get_price_stmt    		= session.prepare("SELECT price from items where itemid = ? allow filtering");
 		//Gets not necessarily unique shortdescription for specific itemid
@@ -64,6 +64,7 @@ public class OrderApi extends Api {
 
 	/**
 	 * Completes Orders marked as ALLOCATE_ORDER and current date with stock available 
+	 * TODO: CHANGE LOGIC TO ACCOUNT FOR PARTIAL AND FULFILLED AND SAFETY AND ORDERTYPE!!
 	 */
 	public void completeOrder() {
 		//identifies today's date in MM/dd/yyyy format
@@ -79,7 +80,7 @@ public class OrderApi extends Api {
 			//ensures every item in the order is in stock
 			for(int itemid : items.keySet()) {
 				int num = items.get(itemid);
-				int available = session.execute(get_quantity_stmt.bind(itemid)).one().getInt("total");
+				int available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total");
 				if(num > available) {
 					fillable = false;
 					break;
@@ -124,26 +125,28 @@ public class OrderApi extends Api {
 	 * @param json
 	 */
 	public void fulfill(JSONObject json) {
-		session.execute(set_fulfill_stmt.bind(json.getString("delivery_date"), json.getInt("id")));	
+		session.execute(set_fulfill_stmt.bind(json.getInt("id")));	
 	}
 	
 	/**
 	 * Assigns OPEN_ORDERS with stock as SCHEDULE_ORDER
+	 * TODO: CHECK SAFETY AND ORDERTYPE
 	 */
 	public void scheduleOrders() {
 		for(Row order:session.execute(get_open_list.bind())) {
-			Boolean fillable = true;
+			Boolean fillable = false;
+			String ordertype = order.getString(ordertype).toLowerCase();
 			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
 			for(int itemid : items.keySet()) {
-				int num = items.get(itemid);
-				int available = session.execute(get_quantity_stmt.bind(itemid)).one().getInt("total");
-				if(num > available) {
-					fillable = false;
+				int available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total") + 
+						session.execute(get_quantity_stmt.bind(ordertype, itemid)).one().getInt("total");
+				if(available > 0) {
+					fillable = true;
+				}
+				if(fillable) {
+					session.execute(set_schedule_stmt.bind(order.getInt("id")));
 					break;
 				}
-			}
-			if(fillable) {
-				session.execute(set_schedule_stmt.bind(order.getInt("id")));
 			}
 		}
 	}
@@ -161,6 +164,10 @@ public class OrderApi extends Api {
 		return "";
 	}
 	
+	/**
+	 * Generate new orderid
+	 * @return int orderid
+	 */
 	private int getOrderId() {
 		Row row = session.execute(select_next_id.bind()).one();
 		int id = row.getInt("next");
@@ -169,10 +176,19 @@ public class OrderApi extends Api {
 		return id;
 	}
 	
+	/**
+	 * Initiates generating a new orderid and starts updating table
+	 * @param json
+	 */
 	public void createOrder(JSONObject json) {
 		insertOrderIntoDb(getOrderId(), json);
 	}
 	
+	/**
+	 * Gets the MSRP of an item
+	 * @param itemid
+	 * @return int price
+	 */
 	private int getPrice(int itemid) {
 		Row row = session.execute(get_price_stmt.bind(itemid)).one();
 		int price = row.getInt("price");
@@ -181,8 +197,7 @@ public class OrderApi extends Api {
 	
 	/**
 	 * @param id
-	 * @return JSONObject consisting of the address, channel, city, date, firstname, lastname, payment, state,
-	 * demand_type, id, total
+	 * @return JSONObject consisting of order details
 	 */
 	public JSONObject getSummary(int id) {
 		JSONArray orders = new JSONArray();
@@ -230,7 +245,7 @@ public class OrderApi extends Api {
 	 */
 	private void addToObject(Row order, JSONObject orderJson) {
 		String[] strColumns = {"address","channel","city","date"
-				,"firstname","lastname","payment","state","zip","demand_type"};
+				,"firstname","lastname","payment","state","zip","demand_type", "ordertype", "shipnode"};
 		String[] intColumns = {"id","total"};
 		orderJson.put("id", order.getInt("id"));
 		//populate json object columns
@@ -243,13 +258,16 @@ public class OrderApi extends Api {
 		JSONArray itemsJson = new JSONArray();
 		Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
 		Map<Integer,Integer> itemsP = order.getMap("price", Integer.class, Integer.class);
+		Map<Integer, Integer> itemsFulfilled = order.getMap("fulfilled", Integer.class, Integer.class);
 
 		for(Integer itemid:items.keySet()) {
 			JSONObject item = new JSONObject();
 			item.put("itemid",itemid);
 			int quantity = items.get(itemid);
 			int MSRPprice = getPrice(itemid);
+			int numFulfilled = itemsFulfilled.get(itemid);
 			item.put("quantity",quantity);
+			item.put("fulfilled", numFulfilled);
 			item.put("MSRPprice", MSRPprice);
 			item.put("shortdescription", getShortDescription(itemid));
 			item.put("MSRPsubtotal", quantity * MSRPprice);
@@ -260,6 +278,12 @@ public class OrderApi extends Api {
 		orderJson.put("items",itemsJson);
 	}
 	
+	/**
+	 * insert order info into db
+	 * TODO:LOGIC FOR RESERVATION
+	 * @param id
+	 * @param json
+	 */
 	private void insertOrderIntoDb(int id, JSONObject json) {
 		//retrieves information from JSONObject
 		String channel   = json.getString("channel");
@@ -271,9 +295,17 @@ public class OrderApi extends Api {
 		String zip       = json.getString("zip");
 		String payment   = json.getString("payment");
 		String address   = json.getString("address");
+		String shipnode  = json.getString("shipnode");
+		String ordertype = json.getString("ordertype");
 		int total        = json.getInt("total"); 
 		JSONArray itemsQuantities = json.getJSONArray("quantity");
-		
+		String demand_type;
+		if(ordertype.toLowerCase().equals("reservation")) {
+			demand_type = "RESERVED_ORDER";
+		}
+		else {
+			demand_type = "OPEN_ORDER";
+		}
 		//populates map with itemid and quantity
 		Map<Integer,Integer> mapQ = new HashMap<>();
 		for(int i = 0; i < itemsQuantities.length();i ++) {
@@ -283,6 +315,15 @@ public class OrderApi extends Api {
 			}
 			else {
 				mapQ.put(item.getInt("itemid"),item.getInt("quantity"));		
+			}
+		}
+		
+		//populates map with itemid and quantity fulfilled
+		Map<Integer,Integer> mapFulfilled = new HashMap<>();
+		for(int i = 0; i < itemsQuantities.length();i ++) {
+			JSONObject item = itemsQuantities.getJSONObject(i);
+			if(!mapFulfilled.containsKey(item.getInt("itemid"))) {
+				mapFulfilled.put(item.getInt("itemid"),0);		
 			}
 		}
 		
@@ -300,7 +341,7 @@ public class OrderApi extends Api {
 		}
 		
 		//inserts order into db
-		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP));
+		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled));
 	}
 
 	/**
