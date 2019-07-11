@@ -23,7 +23,10 @@ cluster = Cluster(["cassandra"])
 session = cluster.connect()
 
 session.default_timeout = None
-session.execute("drop keyspace oms;")
+try:
+    session.execute("drop keyspace oms;")
+except Exception:
+    print("failed to drop table")
 session.execute("CREATE KEYSPACE oms WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3'}  AND durable_writes = true;")
 session = cluster.connect("oms")
 
@@ -159,23 +162,23 @@ def createOrders(num,ordertype="OPEN_ORDER"):
         total = 0
         # generate from 1-10 items for each order
         for _ in  range(random.randrange(10)+1):
-            orderid = random.randrange(len(ITEMDATA))+1
+            itemid = random.randrange(len(ITEMDATA))+1
             quantity = random.randrange(20)
             price    = random.randrange(10000)
-            quanities[orderid] = quantity
-            prices[orderid] = price
+            quanities[itemid] = quantity
+            prices[itemid] = price
             # add current items price to total
             total+= price*quantity 
         # get random sample from mock.csv
         sample = mock_data.sample().astype('str').values[0]
         orderId = getNextOrderId()
-        data = [orderId, random.choice(["Online","Phone","Fax"]),"06/23/19",sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","Debit","Cash"]),total,sample[2],quanities,prices]
+        data = [orderId, random.choice(["Online","Phone","Fax"]),"2019-07-09",sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices]
         create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'"+ordertype+"')")
         session.execute(create_stmt,data)
 
 print("create orders")
-createOrders(5)
 createOrders(100,ordertype="COMPLETE_ORDER")
+createOrders(5)
 print("Create items")
 createItems()
 print ("starting tomcat server")
