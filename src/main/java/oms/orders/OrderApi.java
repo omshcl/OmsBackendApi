@@ -182,7 +182,7 @@ public class OrderApi extends Api {
 	public void scheduleOrders() {
 		for(Row order:session.execute(get_open_list.bind())) {
 			Boolean fillable = false;
-			String ordertype = order.getString(ordertype).toLowerCase();
+			String ordertype = order.getString("ordertype").toLowerCase();
 			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
 			for(int itemid : items.keySet()) {
 				int available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total") + 
