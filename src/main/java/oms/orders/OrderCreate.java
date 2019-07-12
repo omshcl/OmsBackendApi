@@ -39,7 +39,7 @@ public class OrderCreate extends HttpServlet {
 		orderApi.createOrder(json);
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin","*");
-		String responseJson = new JSONObject().put("sucesss","true").toString();
+		String responseJson = new JSONObject().put("success","true").toString();
 		response.getWriter().write(responseJson);
 	}
 	
