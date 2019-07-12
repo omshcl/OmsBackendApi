@@ -68,14 +68,14 @@ public class OrderApi extends Api {
 	 * Completes Orders marked as ALLOCATE_ORDER and current date with stock available 
 	 * TODO: IN PROGRESS: NEED TO MANAGE FULFILL AND TEST
 	 */
-	public void completeOrder() {session.execute(complete_stmt.bind(order.getInt("id")));
+	public void completeOrder() {
 		//identifies today's date in MM/dd/yyyy format
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");  
 	    Date date = new Date();
 	    String d = formatter.format(date);
 	    
 	    //Completes all possible orders of demand_type ALLOCATE_ORDER/PARTIAL_ORDER
-		for(com.sun.rowset.internal.Row order:session.execute(set_final_stmt.bind())) {
+		for(com.datastax.driver.core.Row order:session.execute(set_final_stmt.bind())) {
 			Boolean fillable = false;
 			String ordertype = order.getString("ordertype").toLowerCase();
 			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
