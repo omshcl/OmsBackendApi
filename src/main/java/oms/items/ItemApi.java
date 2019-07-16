@@ -128,7 +128,7 @@ public class ItemApi extends Api {
 		restrictShipnodes = restrictShipnodes.substring(0,restrictShipnodes.length() - 2);
 		
 		//formats query
-		String query = "SELECT * from itemsupplies where itemid in (" + restrictItems + ") " + "and shipnode in (" + restrictShipnodes + ") allow filtering;";
+		String query = "SELECT * from itemsupplies where itemid in (" + restrictItems + ") " + "and shipnode in (" + restrictShipnodes + ") and quantity > 0 allow filtering;";
 		search_stmt = session.prepare(query);
 		
 		//fills jsonArray with relevent searches

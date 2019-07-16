@@ -9,19 +9,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 
-
-@WebServlet(urlPatterns="/orders/new")
-public class OrderCreate extends HttpServlet {
+@WebServlet(urlPatterns="/orders/graph")
+public class OrderDate extends HttpServlet {
 	
-	private  OrderApi orderApi;
+	private OrderApi orderApi;
 	
-	public OrderCreate() {
+	public OrderDate() {
 		orderApi = new OrderApi();
 	}
-	
+
+	@Override
 	/**
-	 * POST request to add orders to orders table
+	 * GET Request that sends all complete_orders
 	 * @param request
 	 * @param response
 	 * @throws IOException
@@ -36,18 +37,11 @@ public class OrderCreate extends HttpServlet {
 		
 		//parse request data and parse as json
 		JSONObject json = new JSONObject(jb.toString());
-		boolean success = orderApi.createOrder(json);
+		int limit = json.getInt("limit");
+	
+		JSONArray orders = orderApi.fulfillDate(limit);
+		response.setContentType("applications/json");
 		response.setCharacterEncoding("UTF-8");
-		response.setHeader("Access-Control-Allow-Origin","*");
-		String responseJson;
-		if(success) {
-			responseJson = new JSONObject().put("success","true").toString();
-		}
-		else {
-			responseJson = new JSONObject().put("failure","false").toString();
-		}
-		response.getWriter().write(responseJson);
+		response.getWriter().write(orders.toString());
 	}
-	
-	
 }

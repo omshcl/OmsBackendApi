@@ -6,7 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date; 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -19,13 +20,13 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, set_final_stmt, set_finalPartial_stmt, reopen_stmt, complete_stmt, get_available_stmt, update_stock_stmt, get_max_orderid, partial_stmt;
+	set_fulfill_stmt, set_final_stmt, get_quantityPickup_stmt, set_finalPartial_stmt, get_ordertype_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
 		session = super.getSession();
 		//Insert into the orders table
-		create_order_stmt 		= session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type,shipnode,ordertype,fulfilled) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+		create_order_stmt 		= session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type,shipnode,ordertype,fulfilled,delivery_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 		//Selects the next order id
 		select_next_id   		= session.prepare("SELECT next from order_id");
 		//Gets entire order table
@@ -36,11 +37,16 @@ public class OrderApi extends Api {
 		get_max_orderid			= session.prepare("SELECT max(id) as maxid from orders where demand_type = 'COMPLETE_ORDER' allow filtering");
 		//Selects COMPLETE_ORDERs
 		get_completed_list 		= session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' and id > ? allow filtering");
+		//Selects orderslimit
+		get_limitorder_list 		= session.prepare("SELECT * from orders where id > ? allow filtering");
 		//Selects orders that are OPEN_ORDERs
 		get_open_list			= session.prepare("SELECT * from orders where demand_type = 'OPEN_ORDER' allow filtering");
-		//Selects ALLOCATE_ORDERs of certain delivery date to prepare to complete
+		//Selects ALLOCATE_ORDERs to prepare to complete
 		set_final_stmt	 		= session.prepare("SELECT * from orders where demand_type = 'ALLOCATE_ORDER' allow filtering");
+		//Selects PARTIAL_ORDERs to prepare to complete
 		set_finalPartial_stmt   = session.prepare("SELECT * from orders where demand_type = 'PARTIAL_ORDER' allow filtering"); 
+		//Selects PARTIAL_ORDERs to prepare to complete
+		set_finalReserved_stmt   = session.prepare("SELECT * from orders where demand_type = 'RESERVED_ORDER' allow filtering");
 		//Generates new order ids
 		inc_id_stmt      		= session.prepare("UPDATE order_id set next = ? where id ='id'");
 		//Sets an order to SCHEDULE_ORDER
@@ -59,203 +65,221 @@ public class OrderApi extends Api {
 		update_stock_stmt 		= session.prepare("UPDATE itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
 		//Finds the number of new, onhand stock of a certain item
 		get_quantity_stmt 		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = ? and itemid = ? and productclass = 'new' allow filtering");
+		//Finds the number of new, onhand stock of a certain item
+		get_quantityPickup_stmt 		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = ? and itemid = ? and shipnode = ? and productclass = 'new' allow filtering");
 		//Gets price of a specific item
 		get_price_stmt    		= session.prepare("SELECT price from items where itemid = ? allow filtering");
 		//Gets not necessarily unique shortdescription for specific itemid
 		get_shortdescri_stmt 	= session.prepare("SELECT shortdescription from items where itemid = ?");
+		get_fulfilledMap_stmt   = session.prepare("SELECT fulfilled from orders where id = ?");
+		update_fulfilled_stmt   = session.prepare("UPDATE orders set fulfilled = ? where id = ?");
+		update_ddate_stmt       = session.prepare("UPDATE orders set delivery_date = ? where id = ?");
+		get_ordertype_stmt      = session.prepare("SELECT ordertype from orders where id = ?");
 	}
 
+	public JSONArray fulfillDate(int x) {
+		JSONArray data = new JSONArray();
+		for(com.datastax.driver.core.Row order:session.execute(get_limitorder_list.bind(x))) {
+			String date = order.getString("date");
+			if(date.length() == 0) {
+				date = generateDate();
+			}
+			String delivery_date = order.getString("delivery_date");
+			if(delivery_date.length() == 0) {
+				delivery_date = generateDate();
+			}
+			int days = calculateDifference(date, delivery_date);
+			JSONObject d = new JSONObject();
+			d.put("id", order.getInt("id"));
+			d.put("demand_type", order.getString("demand_type"));
+			d.put("days", days);
+			data.put(d);
+	    }
+		return data;
+	}
+	
+	private int calculateDifference(String d1, String d2) {
+		LocalDate date = LocalDate.parse(d1, DateTimeFormatter.ISO_LOCAL_DATE);
+		LocalDate delivery_date = LocalDate.parse(d2, DateTimeFormatter.ISO_LOCAL_DATE);
+		Duration diff = Duration.between(date.atStartOfDay(), delivery_date.atStartOfDay());
+		return (int)diff.toDays();
+	}
 	/**
 	 * Completes Orders marked as ALLOCATE_ORDER and current date with stock available 
 	 * TODO: IN PROGRESS: NEED TO MANAGE FULFILL AND TEST
 	 */
 	public void completeOrder() {
-		//identifies today's date in MM/dd/yyyy format
+	    //Completes all possible orders of demand_type ALLOCATE_ORDER/PARTIAL_ORDER
+		for(com.datastax.driver.core.Row order:session.execute(set_final_stmt.bind())) {
+			handleOrder(order);
+	    }
+		for(com.datastax.driver.core.Row order:session.execute(set_finalPartial_stmt.bind())) {
+			handleOrder(order);
+	    }
+		for(com.datastax.driver.core.Row order:session.execute(set_finalReserved_stmt.bind())) {
+			handleReservation(order);
+	    }
+	}
+	
+	private void handleReservation(com.datastax.driver.core.Row order) {
+		Map<Integer, Integer> quantity = order.getMap("quantity", Integer.class, Integer.class);
+		for(int itemid : quantity.keySet()) {
+			//gets quantity needed
+			int q = quantity.get(itemid);
+			//checks onhand supply to fill items
+			for(Row i: session.execute(get_available_stmt.bind(itemid, "reserved"))) {
+				int stock = i.getInt("quantity");
+				//case that shipnode has more than necessary
+				if(stock >= q) {
+					session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
+					q = 0;
+					break;
+				}
+				//need to check more shipnodes
+				else {
+					q = q - stock;
+					session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
+				}
+				if(!(q>0)) {
+					break;
+				}
+			}
+		}
+		session.execute(update_fulfilled_stmt.bind(quantity, order.getInt("id")));
+		session.execute(complete_stmt.bind(order.getInt("id")));
+		session.execute(update_ddate_stmt.bind(generateDate(), order.getInt("id")));
+	}
+	
+	private void handleOrder(com.datastax.driver.core.Row order) {
+		//checks if anything can be filled
+		boolean fillable = checkFillable(order);
+		//removes stock from supplies and marks order as complete
+		if(fillable) {
+			fillOrder(order);
+		}
+		//case that order can no longer be filled at all
+		else if(!order.getString("demand_type").equals("PARTIAL_ORDER")) { 
+			session.execute(reopen_stmt.bind(order.getInt("id")));
+		}
+	}
+	
+	private String generateDate() {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");  
 	    Date date = new Date();
 	    String d = formatter.format(date);
-	    
-	    //Completes all possible orders of demand_type ALLOCATE_ORDER/PARTIAL_ORDER
-		for(com.datastax.driver.core.Row order:session.execute(set_final_stmt.bind())) {
-			Boolean fillable = false;
-			String ordertype = order.getString("ordertype").toLowerCase();
-			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
-			Map<Integer,Integer> itemsF = order.getMap("fulfilled", Integer.class, Integer.class);
-
-			//Ensures at least one item is in stock
-			for(int itemid : items.keySet()) {
-				int available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total") + 
-						session.execute(get_quantity_stmt.bind(ordertype, itemid)).one().getInt("total");
-				if(available > 0 && (itemsF.get(itemid) < items.get(itemid))) {
-					fillable = true;
-					break;
-				}
-			}
-			
-			//removes stock from supplies and marks order as complete
-			if(fillable) {
-				boolean partial = false;
-				for(int itemid : items.keySet()) {
-					int q = items.get(itemid);
-					int numF = 0;
-					for(Row i: session.execute(get_available_stmt.bind(itemid, "onhand"))) {
-						//only if items are needed
-						if(q > 0) {
-							int stock = i.getInt("quantity");
-							//case that first shipnode has more than necessary
-							if(stock >= q) {
-								session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-								numF += q;
-								q = 0;
-								break;
-							}
-							//need to check more shipnodes
-							else {
-								q = q - stock;
-								numF += stock;
-								session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-							}
-						}
-						else {
-							break;
-						}
-					}
-					//remaining quantity handling
-					if(q > 0) {
-						for(Row i: session.execute(get_available_stmt.bind(itemid, ordertype))) {
-							//only if items are needed
-							if(!((ordertype.equals("pickup") && i.getString("shipnode").toLowerCase().equals(order.getString("shipnode").toLowerCase())) ||
-									ordertype.equals("ship"))) {
-								continue;
-							}
-							if(q > 0) {
-								int stock = i.getInt("quantity");
-								//case that first shipnode has more than necessary
-								if(stock >= q) {
-									session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-									numF += q;
-									q = 0;
-									break;
-								}
-								//need to check more shipnodes
-								else {
-									numF += stock;
-									q = q - stock;
-									session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-								}
-							}
-							else {
-								break;
-							}
-						}
-					}
-					if(q > 0) {
-						partial = true;
-						session.execute(partial_stmt.bind(order.getInt("id")));
-					}
-					//TODO: update fulfilled to itemid:numF
-				}
-				//change status of order to complete if it was not only fulfilled partially
-				if(!partial) {
-					session.execute(complete_stmt.bind(order.getInt("id")));
-				}
-			}
-			//case that order can no longer be filled at all
-			else { 
-				session.execute(reopen_stmt.bind(order.getInt("id")));
-				 }
-	    }
-		
-		for(com.datastax.driver.core.Row order:session.execute(set_finalPartial_stmt.bind())) {
-			Boolean fillable = false;
-			String ordertype = order.getString("ordertype").toLowerCase();
-			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
-			Map<Integer,Integer> itemsF = order.getMap("fulfilled", Integer.class, Integer.class);
-
-			//Ensures at least one item is in stock
-			for(int itemid : items.keySet()) {
-				int available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total") + 
-						session.execute(get_quantity_stmt.bind(ordertype, itemid)).one().getInt("total");
-				if(available > 0 && (itemsF.get(itemid) < items.get(itemid))) {
-					fillable = true;
-					break;
-				}
-			}
-			
-			//removes stock from supplies and marks order as complete
-			if(fillable) {
-				boolean partial = false;
-				for(int itemid : items.keySet()) {
-					int q = items.get(itemid);
-					int numF = 0;
-					for(Row i: session.execute(get_available_stmt.bind(itemid, "onhand"))) {
-						//only if items are needed
-						if(q > 0) {
-							int stock = i.getInt("quantity");
-							//case that first shipnode has more than necessary
-							if(stock >= q) {
-								session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-								numF += q;
-								q = 0;
-								break;
-							}
-							//need to check more shipnodes
-							else {
-								q = q - stock;
-								numF += stock;
-								session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-							}
-						}
-						else {
-							break;
-						}
-					}
-					//remaining quantity handling
-					if(q > 0) {
-						for(Row i: session.execute(get_available_stmt.bind(itemid, ordertype))) {
-							//only if items are needed
-							if(!((ordertype.equals("pickup") && i.getString("shipnode").toLowerCase().equals(order.getString("shipnode").toLowerCase())) ||
-									ordertype.equals("ship"))) {
-								continue;
-							}
-							if(q > 0) {
-								int stock = i.getInt("quantity");
-								//case that first shipnode has more than necessary
-								if(stock >= q) {
-									session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-									numF += q;
-									q = 0;
-									break;
-								}
-								//need to check more shipnodes
-								else {
-									numF += stock;
-									q = q - stock;
-									session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
-								}
-							}
-							else {
-								break;
-							}
-						}
-					}
-					if(q > 0) {
-						partial = true;
-						session.execute(partial_stmt.bind(order.getInt("id")));
-					}
-					//TODO: update fulfilled to itemid:numF
-				}
-				//change status of order to complete if it was not only fulfilled partially
-				if(!partial) {
-					session.execute(complete_stmt.bind(order.getInt("id")));
-				}
-			}
-			//case that order can no longer be filled at all
-			else { 
-				session.execute(reopen_stmt.bind(order.getInt("id")));
-				 }
-	    }
+	    return d;
+	}
 	
+	private void fillOrder(com.datastax.driver.core.Row order) {
+		//assumes not only partially complete
+		boolean partial = false;
+		//gets ordertype to look at safety stock
+		String ordertype = order.getString("ordertype").toLowerCase();
+		//gets needed quantity for order
+		Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);				//gets num of each item already filled
+		Map<Integer,Integer> itemsF = order.getMap("fulfilled", Integer.class, Integer.class);
+		//goes through all requested items
+		for(int itemid : items.keySet()) {
+			//gets quantity needed
+			int q = items.get(itemid) - itemsF.get(itemid);
+			int numF = itemsF.get(itemid);
+			//checks onhand supply to fill items
+			for(Row i: session.execute(get_available_stmt.bind(itemid, "onhand"))) {
+				//only if items are needed
+				if(ordertype.equals("pickup") && !order.getString("shipnode").equals(i.getString("shipnode"))) {
+					continue;
+				}
+				int stock = i.getInt("quantity");
+				//case that shipnode has more than necessary
+				if(stock >= q) {
+					session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
+					numF += q;
+					q = 0;
+					break;
+				}
+				//need to check more shipnodes
+				else {
+					q = q - stock;
+					numF += stock;
+					session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
+				}
+				if(!(q>0)) {
+					break;
+				}
+			}
+			for(Row i: session.execute(get_available_stmt.bind(itemid, ordertype))) {
+				//only if in correct shipnode
+				if(!((ordertype.equals("pickup") && i.getString("shipnode").toLowerCase().equals(order.getString("shipnode").toLowerCase())) ||
+					ordertype.equals("ship"))) {
+					continue;
+				}
+				//get available stock
+				int stock = i.getInt("quantity");
+				//case that first shipnode has more than necessary
+				if(stock >= q) {
+					session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
+					numF += q;
+					q = 0;
+					break;
+				}
+				//need to check more shipnodes
+				else {
+					numF += stock;
+					q = q - stock;
+					session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, i.getString("type"), i.getString("productclass")));
+				}
+				if(!(q>0)){break;}
+				}
+			if(q > 0) {
+			    partial = true;
+				session.execute(partial_stmt.bind(order.getInt("id")));
+			}
+			itemsF.put(itemid, numF);
+		}
+		System.out.println(itemsF);
+		//change status of order to complete if it was not only fulfilled partially
+		session.execute(update_fulfilled_stmt.bind(itemsF, order.getInt("id")));
+		if(!partial) {
+			session.execute(complete_stmt.bind(order.getInt("id")));
+			session.execute(update_ddate_stmt.bind(generateDate(), order.getInt("id")));
+		}
+		else if(order.getString("delivery_date").length() == 0) {
+			session.execute(update_ddate_stmt.bind(generateDate(), order.getInt("id")));
+		}
+	}
+	
+	
+	private boolean checkFillable(com.datastax.driver.core.Row order) {
+		//gets ordertype to look at safety stock
+		String ordertype = order.getString("ordertype").toLowerCase();
+		//gets needed quantity for order
+		Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
+		//gets num of each item already filled
+		Map<Integer,Integer> itemsF = order.getMap("fulfilled", Integer.class, Integer.class);
+				
+		//Ensures at least one item that has not been completely filled is in stock
+		return checkItemsFillable(items, itemsF, ordertype, order.getString("shipnode"));
+	}
+	
+	private boolean checkItemsFillable(Map<Integer,Integer> items, Map<Integer,Integer> itemsF, String ordertype, String shipnode) {
+		Boolean fillable = false;
+		for(int itemid : items.keySet()) {
+			int available;
+			if(ordertype.equalsIgnoreCase("pickup")) {
+				available = session.execute(get_quantityPickup_stmt.bind("onhand", itemid, shipnode)).one().getInt("total") + 
+						session.execute(get_quantityPickup_stmt.bind(ordertype, itemid, shipnode)).one().getInt("total");
+
+			}
+			else {
+				available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total") + 
+						session.execute(get_quantity_stmt.bind(ordertype, itemid)).one().getInt("total");
+			}
+			if(available > 0 && (itemsF.get(itemid) < items.get(itemid))) {
+					fillable = true;
+					break;
+			}
+		}
+		return fillable;
 	}
 	
 	/**
@@ -271,18 +295,30 @@ public class OrderApi extends Api {
 	 * TODO: CHECK SAFETY AND ORDERTYPE
 	 */
 	public void scheduleOrders() {
+		//iterates through all OPEN_ORDERs
 		for(Row order:session.execute(get_open_list.bind())) {
+			//assumes cannot fill an order until it sees one item is available
 			Boolean fillable = false;
+			//gets ordertype in order to discriminate between safety stocks
 			String ordertype = order.getString("ordertype").toLowerCase();
+			//looks for total quantity needed to see quanitity of each item needed
+			//this quantity map preserves quantity and does not consider fulfilled
 			Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);
+			//gets fulfilled details
+			Map<Integer,Integer> itemsFulfilled = order.getMap("fulfilled", Integer.class, Integer.class);
+			//iterates through all items and quantities required in the order
 			for(int itemid : items.keySet()) {
+				//gets total stock available from total and safety
 				int available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total") + 
 						session.execute(get_quantity_stmt.bind(ordertype, itemid)).one().getInt("total");
-				if(available > 0) {
+				//checks that there are items available and that there are items left to be fulfilled
+				if((available > 0) && (itemsFulfilled.get(itemid) < items.get(itemid))) {
 					fillable = true;
 				}
+				//schedules the order if even one item can be scheduled
 				if(fillable) {
 					session.execute(set_schedule_stmt.bind(order.getInt("id")));
+					//allows quickly moving to schedule more orders
 					break;
 				}
 			}
@@ -318,8 +354,8 @@ public class OrderApi extends Api {
 	 * Initiates generating a new orderid and starts updating table
 	 * @param json
 	 */
-	public void createOrder(JSONObject json) {
-		insertOrderIntoDb(getOrderId(), json);
+	public boolean createOrder(JSONObject json) {
+		return insertOrderIntoDb(getOrderId(), json);
 	}
 	
 	/**
@@ -422,10 +458,10 @@ public class OrderApi extends Api {
 	 * @param id
 	 * @param json
 	 */
-	private void insertOrderIntoDb(int id, JSONObject json) {
+	private boolean insertOrderIntoDb(int id, JSONObject json) {
 		//retrieves information from JSONObject
 		String channel   = json.getString("channel");
-		String date      = json.getString("date");
+		String date      = json.getString("date").substring(0,10);
 		String firstname = json.getString("firstname");
 		String lastname  = json.getString("lastname");
 		String city      = json.getString("city");
@@ -434,17 +470,10 @@ public class OrderApi extends Api {
 		String payment   = json.getString("payment");
 		String address   = json.getString("address");
 		String shipnode  = json.getString("shipnode");
+		//pickup,ship,reservation
 		String ordertype = json.getString("ordertype");
 		int total        = json.getInt("total"); 
 		JSONArray itemsQuantities = json.getJSONArray("quantity");
-		String demand_type;
-		if(ordertype.toLowerCase().equals("reservation")) {
-			demand_type = "RESERVED_ORDER";
-			//TODO:logic for reservations
-		}
-		else {
-			demand_type = "OPEN_ORDER";
-		}
 		//populates map with itemid and quantity
 		Map<Integer,Integer> mapQ = new HashMap<>();
 		for(int i = 0; i < itemsQuantities.length();i ++) {
@@ -458,10 +487,12 @@ public class OrderApi extends Api {
 		}
 		
 		//populates map with itemid and quantity fulfilled
+		//OK to still use this when updating bc partially fulfilled cannot be updated
 		Map<Integer,Integer> mapFulfilled = new HashMap<>();
 		for(int i = 0; i < itemsQuantities.length();i ++) {
 			JSONObject item = itemsQuantities.getJSONObject(i);
 			if(!mapFulfilled.containsKey(item.getInt("itemid"))) {
+				//all orders initially have no items fulfilled
 				mapFulfilled.put(item.getInt("itemid"),0);		
 			}
 		}
@@ -479,8 +510,50 @@ public class OrderApi extends Api {
 			}
 		}
 		
+		String demand_type;
+		if(ordertype.toLowerCase().equals("reservation")) {
+			demand_type = "RESERVED_ORDER";
+			boolean canReserve = checkItemsFillable(mapQ, mapFulfilled, ordertype, shipnode);
+			if(!canReserve) {
+				return false;
+			}
+			else {
+				reserveSupply(mapQ);
+			}
+		}
+		else {
+			demand_type = "OPEN_ORDER";
+		}
+		
 		//inserts order into db
-		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled));
+		System.out.println("date: " + date);
+		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled,""));
+		return true;
+	}
+	
+	private void reserveSupply(Map<Integer, Integer> quantity) {
+		for(int itemid : quantity.keySet()) {
+			//gets quantity needed
+			int q = quantity.get(itemid);
+			//checks onhand supply to fill items
+			for(Row i: session.execute(get_available_stmt.bind(itemid, "onhand"))) {
+				int stock = i.getInt("quantity");
+				//case that shipnode has more than necessary
+				if(stock >= q) {
+					session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
+					q = 0;
+					break;
+				}
+				//need to check more shipnodes
+				else {
+					q = q - stock;
+					session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
+				}
+				if(!(q>0)) {
+					break;
+				}
+			}
+		}
 	}
 
 	/**
