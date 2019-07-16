@@ -1,14 +1,6 @@
 # uses alpine linux to build a lightweight container
-FROM python:3.6.4-alpine3.7
-RUN apk --update add --no-cache g++
-# install cassandra and tomcat dependencies
-RUN apk add curl openjdk8 maven python3 bash py-pip
-RUN pip3 install requests pandas cassandra-driver
+FROM archlinux/base
+RUN pacman -Syyu --noconfirm && pacman -S --noconfirm python python-pip python-pandas jdk8-openjdk maven python-requests  && pip install cassandra-driver
 # install cassandra and java runtime
 COPY . /root/
-EXPOSE 8080
-EXPOSE 9042
-EXPOSE 9160
-EXPOSE 7000
-#ENTRYPOINT ["/bin/bash"]
 ENTRYPOINT ["/root/setup.sh"]

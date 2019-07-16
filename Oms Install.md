@@ -69,7 +69,11 @@ to
 
     set PERFJAVAOPTION=-Xms1024m -Xmx2048m -Xquickstart
 
-# install war
+# Build ear file
+ 
+    buildear.cmd -Dsupport.multi.war=true -Dappserver=websphere -Dwarfiles=smcfs,sbc,sic -Dearfile=smcfs.ear -Ddevmode=true -Dnowebervice=true= Dnodocear=false create-ear
+
+# install ear
 
  
     https://localhost:9043/ibm/console
