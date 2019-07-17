@@ -4,7 +4,9 @@ import time
 import json
 import urllib.request
 import random
-import pandas 
+import pandas
+import math
+import datetime
 import codecs
 import platform
 import sys
@@ -44,12 +46,12 @@ schema = [
     ,"insert into order_id (id,next)  VALUES ('id',1);"
     ,"insert into id (id,itemid)      VALUES('id',1);"
     ,"insert into shipnodes (locationname) VALUES('Austin');"
-    ,"insert into shipnodes (locationname) VALUES('El Paso');"
-    ,"insert into shipnodes (locationname) VALUES('San Antonio');"
-    ,"insert into shipnodes (locationname) VALUES('New Orleans');"
-    ,"insert into shipnodes (locationname) VALUES('Dallas');"
-    ,"insert into shipnodes (locationname) VALUES('Chicago');"
     ,"insert into shipnodes (locationname) VALUES('Buffalo');"
+    ,"insert into shipnodes (locationname) VALUES('Chicago');"
+    ,"insert into shipnodes (locationname) VALUES('Dallas');"
+    ,"insert into shipnodes (locationname) VALUES('El Paso');"
+    ,"insert into shipnodes (locationname) VALUES('New Orleans');"
+    ,"insert into shipnodes (locationname) VALUES('San Antonio');"
     ,"CREATE TABLE oms.users (username text PRIMARY KEY,isadmin boolean,password text);"
     ,"insert into users (username,isadmin,password) VALUES('admin',true,'�I�Y47����:�oj');"
     ,"insert into users (username,isadmin,password) VALUES('agent',false,'L��G;y���h�w����');"
@@ -64,20 +66,20 @@ print ("waiting for tomcat7 to start")
 # lists of default shipnodes
 SHIPNODES = [
     "Austin",
-    "El Paso",
-    "San Antonio",
-    "New Orleans",
-    "Dallas",
+    "Buffalo",
     "Chicago",
-    "Buffalo"
+    "Dallas",
+    "El Paso",
+    "New Orleans",
+    "San Antonio",
 ]
 
 ITEMDATA = [
-    ["MOTO Samsung Galaxy J3 phone","Galaxy J3 Phone","Phone","Motorola"],
-    ["15 inch Lenovo 2019 laptop P52","Lenovo Laptop","Laptop","Lenovo"],
-    ["Dell XPS 15 Laptop 2018","Dell Laptop","Laptop","Dell"],
-    ["K840 Mechanical Corded Keyboard","Mechanical Keyboard","Keyboard","Logitech"],
-    ["Dell SE2419Hx 23.8 \" IPS Full HD Monitor","HD Monitor","Monitor","Dell"]
+    ["MOTO Samsung Galaxy J3 phone","Galaxy J3 Phone","Phone","Motorola","899"],
+    ["15 inch Lenovo 2019 laptop P52","Lenovo Laptop","Laptop","Lenovo","1299"],
+    ["Dell XPS 15 Laptop 2018","Dell Laptop","Laptop","Dell","999"],
+    ["K840 Mechanical Corded Keyboard","Mechanical Keyboard","Keyboard","Logitech","199"],
+    ["Dell SE2419Hx 23.8 \" IPS Full HD Monitor","HD Monitor","Monitor","Dell","149"]
 ]
 
 # import mock data 
@@ -118,19 +120,33 @@ def getSupplyId():
 
 def insert(supplyid,data):
     dat = [supplyid,data["productclass"],data["eta"],data["shipbydate"],data["locationname"],data["type"],data["quantity"],data["shippingaddress"]]
-    session.execute(insert_itemsupply_stmt,dat)
-    session.execute(insert_item_stmt,[supplyid,data["category"],data["isreturnable"],data["itemdescription"],data["manufacturername"],data["price"],data["shortdescription"],data["subcategory"],data["unitofmeasure"]])
+    session.execute(insert_itemsupply_stmt,dat)    #session.execute(insert_item_stmt,[supplyid,data["category"],data["isreturnable"],data["itemdescription"],data["manufacturername"],data["price"],data["shortdescription"],data["subcategory"],data["unitofmeasure"]])
 
 
 # creates the list of items from sample data
 def createItems():
-    for _ in range(16):
+    #add items to items table
+    for index in range(len(ITEMDATA)):
+        item = ITEMDATA[index]
+        data = {
+        "category":item[2]
+        ,"isreturnable":"true"
+        ,"itemdescription":item[0]
+        ,"manufacturername":item[3]
+        ,"price":int(item[4])
+        ,"shortdescription":item[1]
+        ,"subcategory":item[1]
+        ,"unitofmeasure":"each"}
+        session.execute(insert_item_stmt,[(index+1),data["category"],data["isreturnable"],data["itemdescription"],data["manufacturername"],data["price"],data["shortdescription"],data["subcategory"],data["unitofmeasure"]])
+        
+    #create item supply    
+    for _ in range(50):
         item = random.choice(ITEMDATA)
         description = item[0]
         sample = mock_data.sample().astype('str').values[0]
-        data = {"productclass":random.choice(["new","used"])
+        data = {"productclass":random.choice(["new","new","new","new","new","new","new","new","new","used"])
         ,"eta":'6/29/19'
-        ,"type":random.choice(["pipeline","onhand"])
+        ,"type":random.choice(["pipeline","onhand","onhand","onhand","onhand"])
         ,"quantity":random.randrange(50)+1
         # get random address
         ,"shippingaddress":sample[2]
@@ -141,31 +157,69 @@ def createItems():
         # get manufacture
         , "manufacturername":item[3]
         , "shipbydate":"6/29/19"
-        , "price":random.randrange(10000)
+        , "price":int(item[4])
         , "shortdescription":item[1]
         ,  "subcategory":"Laptop"
 , "unitofmeasure":"Each"}
         itemid = session.execute(get_exist_stmt,[item[0]])
-        if itemid:
-            insert(itemid[0][0],data)
-        else:
-            insert(getSupplyId(),data)
-
+        #if itemid:
+        insert(itemid[0][0],data)
+        #else:
+            #insert(getSupplyId(),data)
+    
+    #make reserved item (item 1, qty 3, Austin)
+    item = ITEMDATA[0]
+    description = item[0]
+    sample = mock_data.sample().astype('str').values[0]
+    data = {"productclass":"new"
+    ,"eta":'6/29/19'
+    ,"type":"reserved"
+    ,"quantity":3
+    # get random address
+    ,"shippingaddress":sample[2]
+    # get category from item data
+    ,"category":item[2]
+    ,"locationname":"Austin"
+    ,"isreturnable":"true","itemdescription":item[0]
+    # get manufacture
+    , "manufacturername":item[3]
+    , "shipbydate":"6/29/19"
+    , "price":int(item[4])
+    , "shortdescription":item[1]
+    ,  "subcategory":"Laptop"
+, "unitofmeasure":"Each"}
+    itemid = session.execute(get_exist_stmt,[item[0]])
+    #if itemid:
+    insert(itemid[0][0],data)
 
 
 #create orders default is 1000
-def createOrders(num,ordertype="OPEN_ORDER"):
-    for order in range(num):
+def createOrders(num): 
+    if num < 30: #minimum of 30 orders
+        num = 30
+    startdate = (datetime.datetime.now() - datetime.timedelta(days=num+11)).strftime("%Y-%m-%d")
+    curdate = startdate
+    for order in range(num): #completed orders
+        date = datetime.datetime.strptime(startdate, '%Y-%m-%d') + datetime.timedelta(days=order)
+        curdate = date
+        deliverydate = date + datetime.timedelta(days=random.randrange(10)+1)
+        date = date.strftime('%Y-%m-%d')
+        deliverydate = deliverydate.strftime('%Y-%m-%d')
         quanities = {}
         prices = {}
         fulfilledqtys = {}
+        ordertype = random.choice(["ship","pickup"])
+        shipnode = random.choice(SHIPNODES)
+        if ordertype == "ship":
+            shipnode = ""
         # keep tracking of the total price of order
         total = 0
         # generate from 1-10 items for each order
         for _ in  range(random.randrange(10)+1):
             itemid = random.randrange(len(ITEMDATA))+1
-            quantity = random.randrange(20)
-            price    = random.randrange(10000)
+            quantity = random.randrange(20)+1
+            discount = random.randrange(30) + 75
+            price = math.floor(int(ITEMDATA[itemid-1][4]) * (discount/100))
             quanities[itemid] = quantity
             prices[itemid] = price
             fulfilledqtys[itemid] = 0
@@ -174,13 +228,82 @@ def createOrders(num,ordertype="OPEN_ORDER"):
         # get random sample from mock.csv
         sample = mock_data.sample().astype('str').values[0]
         orderId = getNextOrderId()
-        data = [orderId, random.choice(["Online","Phone","Fax"]),"2019-07-09",sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys]
-        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+ordertype+"')")
+        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode]
+        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+"COMPLETE_ORDER"+"')")
         session.execute(create_stmt,data)
+        
+    startdate = curdate.strftime('%Y-%m-%d')
+    for order in range(10): #Create Partial and Open Orders
+        date = datetime.datetime.strptime(startdate, '%Y-%m-%d') + datetime.timedelta(days=order+1)
+        curdate = date
+        deliverydate = date + datetime.timedelta(days=random.randrange(10)+1)
+        date = date.strftime('%Y-%m-%d')
+        deliverydate = deliverydate.strftime('%Y-%m-%d')
+        quanities = {}
+        prices = {}
+        fulfilledqtys = {}
+        demandtype = random.choice(["PARTIAL_ORDER", "OPEN_ORDER"])
+        ordertype = random.choice(["ship","pickup"])
+        shipnode = random.choice(SHIPNODES)
+        if ordertype == "ship":
+            shipnode = ""        
+        # keep tracking of the total price of order
+        total = 0
+        # generate from 1-10 items for each order
+        for _ in  range(random.randrange(10)+1):
+            itemid = random.randrange(len(ITEMDATA))+1
+            quantity = random.randrange(20)+1
+            discount = random.randrange(30) + 75
+            price = math.floor(int(ITEMDATA[itemid-1][4]) * (discount/100))
+            quanities[itemid] = quantity
+            prices[itemid] = price
+            if demandtype == "PARTIAL_ORDER":
+                fulfilledqtys[itemid] = random.randrange(quantity) + 1
+            else:
+                fulfilledqtys[itemid] = 0
+                deliverydate = ""
+            # add current items price to total
+            total+= price*quantity 
+        # get random sample from mock.csv
+        sample = mock_data.sample().astype('str').values[0]
+        orderId = getNextOrderId()
+        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode]
+        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
+        session.execute(create_stmt,data)
+        
+    startdate = curdate.strftime('%Y-%m-%d')
+    for order in range(1): #Create Reservations
+        date = datetime.datetime.strptime(startdate, '%Y-%m-%d') + datetime.timedelta(days=order+1)
+        curdate = date
+        date = date.strftime('%Y-%m-%d')
+        quanities = {}
+        prices = {}
+        fulfilledqtys = {}
+        demandtype = "RESERVED_ORDER"
+        ordertype = "reservation"
+        shipnode = "Austin"     
+        # keep tracking of the total price of order
+        total = 0
+        # generate from 1-10 items for each order
+        itemid = 1
+        quantity = 3
+        price = int(ITEMDATA[itemid-1][4])
+        quanities[itemid] = quantity
+        prices[itemid] = price
+        fulfilledqtys[itemid] = 0
+        deliverydate = ""
+        # add current items price to total
+        total+= price*quantity 
+        # get random sample from mock.csv
+        sample = mock_data.sample().astype('str').values[0]
+        orderId = getNextOrderId()
+        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode]
+        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
+        session.execute(create_stmt,data)    
+
 
 print("create orders")
-createOrders(100,ordertype="COMPLETE_ORDER")
-createOrders(5)
+createOrders(100)
 print("Create items")
 createItems()
 print ("starting tomcat server")
