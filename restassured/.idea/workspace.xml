@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d9a68aca-d5d1-435a-aa4b-74be6eaafaed" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/TestLogin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/TestLogin.java" afterDir="false" />
-    </list>
+    <list default="true" id="d9a68aca-d5d1-435a-aa4b-74be6eaafaed" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -30,14 +27,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/test/java/TestLogin.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="410">
-              <caret line="89" column="19" lean-forward="true" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
+            <state relative-caret-position="454">
+              <caret line="89" column="19" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#2420#2421#0" expanded="true" />
-                <element signature="e#2467#2468#0" expanded="true" />
-                <element signature="e#2420#2421#0" expanded="true" />
-                <element signature="e#2467#2468#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -83,10 +76,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-44" />
+    <option name="x" value="-45" />
     <option name="y" value="-15" />
     <option name="width" value="1915" />
-    <option name="height" value="1103" />
+    <option name="height" value="1104" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -94,7 +87,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -136,6 +128,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -269,7 +262,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.23489933" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.23825504" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -317,14 +310,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestLogin.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
-          <caret line="89" column="19" lean-forward="true" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
+        <state relative-caret-position="454">
+          <caret line="89" column="19" selection-start-line="89" selection-start-column="19" selection-end-line="89" selection-end-column="19" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#2420#2421#0" expanded="true" />
-            <element signature="e#2467#2468#0" expanded="true" />
-            <element signature="e#2420#2421#0" expanded="true" />
-            <element signature="e#2467#2468#0" expanded="true" />
           </folding>
         </state>
       </provider>

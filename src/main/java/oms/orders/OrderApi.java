@@ -20,7 +20,7 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, set_final_stmt, get_quantityPickup_stmt, set_finalPartial_stmt, get_ordertype_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
+	set_fulfill_stmt, get_max_allid, set_final_stmt, get_quantityPickup_stmt, set_finalPartial_stmt, get_ordertype_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
@@ -34,6 +34,7 @@ public class OrderApi extends Api {
 		//Retrieves row from order table about specific order
 		get_info_stmt     		= session.prepare("SELECT * from orders where id = ?");
 		//Finds maximum order id
+		get_max_allid			= session.prepare("SELECT max(id) as maxid from orders allow filtering");
 		get_max_orderid			= session.prepare("SELECT max(id) as maxid from orders where demand_type = 'COMPLETE_ORDER' allow filtering");
 		//Selects COMPLETE_ORDERs
 		get_completed_list 		= session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' and id > ? allow filtering");
@@ -79,7 +80,8 @@ public class OrderApi extends Api {
 
 	public JSONArray fulfillDate(int x) {
 		JSONArray data = new JSONArray();
-		for(com.datastax.driver.core.Row order:session.execute(get_limitorder_list.bind(x))) {
+		int maxid = session.execute(get_max_allid.bind()).one().getInt("maxid");
+		for(com.datastax.driver.core.Row order:session.execute(get_limitorder_list.bind(maxid - x))) {
 			String date = order.getString("date");
 			if(date.length() == 0) {
 				date = generateDate();
