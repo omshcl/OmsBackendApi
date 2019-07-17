@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-@WebServlet(urlPatterns="/reserve")
+@WebServlet(urlPatterns="/orders/reserve")
 
 public class Reserve extends HttpServlet {
 	
