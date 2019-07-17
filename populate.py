@@ -243,7 +243,7 @@ def createOrders(num):
         prices = {}
         fulfilledqtys = {}
         demandtype = random.choice(["PARTIAL_ORDER", "OPEN_ORDER"])
-        ordertype = random.choice(["ship","pickup"])
+        ordertype = random.choice(["Ship","Pickup"])
         shipnode = random.choice(SHIPNODES)
         if ordertype == "ship":
             shipnode = ""        
@@ -280,7 +280,7 @@ def createOrders(num):
         prices = {}
         fulfilledqtys = {}
         demandtype = "RESERVED_ORDER"
-        ordertype = "reservation"
+        ordertype = "Reservation"
         shipnode = "Austin"     
         # keep tracking of the total price of order
         total = 0
