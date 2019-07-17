@@ -518,7 +518,7 @@ public class OrderApi extends Api {
 				return false;
 			}
 			else {
-				reserveSupply(mapQ);
+				reserveSupply(mapQ, shipnode);
 			}
 		}
 		else {
@@ -531,12 +531,12 @@ public class OrderApi extends Api {
 		return true;
 	}
 	
-	private void reserveSupply(Map<Integer, Integer> quantity) {
+	private void reserveSupply(Map<Integer, Integer> quantity, String shipnode) {
 		for(int itemid : quantity.keySet()) {
 			//gets quantity needed
 			int q = quantity.get(itemid);
 			//checks onhand supply to fill items
-			for(Row i: session.execute(get_available_stmt.bind(itemid, "onhand"))) {
+			for(Row i: session.execute(get_availableReserved_stmt.bind(itemid, "onhand", shipnode))) {
 				Row r = session.execute(get_reserved_num.bind(itemid, i.getString("shipnode"))).one();
 				int already = 0;
 				if(r == null) {
