@@ -38,7 +38,6 @@ public class CompletedList extends HttpServlet {
 		//parse request data and parse as json
 		JSONObject json = new JSONObject(jb.toString());
 		int limit = json.getInt("limit");
-	
 		JSONArray orders = orderApi.listCompletedOrders(limit);
 		response.setContentType("applications/json");
 		response.setCharacterEncoding("UTF-8");

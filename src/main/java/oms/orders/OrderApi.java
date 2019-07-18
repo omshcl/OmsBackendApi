@@ -390,6 +390,9 @@ public class OrderApi extends Api {
 		JSONArray orders = new JSONArray();
 		int max = session.execute(get_max_orderid.bind()).one().getInt("maxid");
 		int start = max - numRows;
+		if(start > max) {
+			start = 0;
+		}
 		for(Row order:session.execute(get_completed_list.bind(start))) {
 			JSONObject orderJson = new JSONObject();
 			addToObject(order, orderJson);
