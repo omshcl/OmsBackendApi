@@ -20,7 +20,7 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, get_max_allid, set_final_stmt, get_reserved_num, get_quantityPickup_stmt, set_finalPartial_stmt, get_ordertype_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
+	set_fulfill_stmt, get_max_allid, get_availableReserved_stmt, set_final_stmt, get_reserved_num, get_quantityPickup_stmt, set_finalPartial_stmt, get_ordertype_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
@@ -62,6 +62,7 @@ public class OrderApi extends Api {
 		partial_stmt 			= session.prepare("UPDATE orders set demand_type = 'PARTIAL_ORDER' where id = ?");
 		//Selects all stock of a certain item
 		get_available_stmt 		= session.prepare("SELECT * from itemsupplies where itemid = ? and type = ? and productclass = 'new' allow filtering");
+		get_availableReserved_stmt 		= session.prepare("SELECT * from itemsupplies where itemid = ? and type = ? and shipnode = ? and productclass = 'new' allow filtering");
 		//changes stock of item
 		update_stock_stmt 		= session.prepare("UPDATE itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
 		//Finds the number of new, onhand stock of a certain item
@@ -123,28 +124,15 @@ public class OrderApi extends Api {
 	
 	public void handleReservation(int id) {
 		Row order = session.execute(get_info_stmt.bind(id)).one();
+		String shipnode = order.getString("shipnode");
 		Map<Integer, Integer> quantity = order.getMap("quantity", Integer.class, Integer.class);
 		for(int itemid : quantity.keySet()) {
 			//gets quantity needed
 			int q = quantity.get(itemid);
 			//checks onhand supply to fill items
-			for(Row i: session.execute(get_available_stmt.bind(itemid, "reserved"))) {
-				int stock = i.getInt("quantity");
-				//case that shipnode has more than necessary
-				if(stock >= q) {
-					session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
-					q = 0;
-					break;
-				}
-				//need to check more shipnodes
-				else {
-					q = q - stock;
-					session.execute(update_stock_stmt.bind(0, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
-				}
-				if(!(q>0)) {
-					break;
-				}
-			}
+			Row i = session.execute(get_availableReserved_stmt.bind(itemid, "reserved", shipnode)).one(); 
+			int stock = i.getInt("quantity");
+			session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
 		}
 		session.execute(update_fulfilled_stmt.bind(quantity, order.getInt("id")));
 		session.execute(complete_stmt.bind(order.getInt("id")));
@@ -262,9 +250,9 @@ public class OrderApi extends Api {
 		return checkItemsFillable(items, itemsF, ordertype, order.getString("shipnode"));
 	}
 	
-	private boolean checkReservable(Map<Integer,Integer> items) {		
+	private boolean checkReservable(Map<Integer,Integer> items, String shipnode) {		
 		for(int itemid : items.keySet()) {
-			int available = session.execute(get_quantity_stmt.bind("onhand", itemid)).one().getInt("total"); 
+			int available = session.execute(get_quantityPickup_stmt.bind("onhand", itemid, shipnode)).one().getInt("total"); 
 			if(available < items.get(itemid)) {
 				return false;
 			}
@@ -525,12 +513,12 @@ public class OrderApi extends Api {
 		String demand_type;
 		if(ordertype.toLowerCase().equals("reservation")) {
 			demand_type = "RESERVED_ORDER";
-			boolean canReserve = checkReservable(mapQ);
+			boolean canReserve = checkReservable(mapQ, shipnode);
 			if(!canReserve) {
 				return false;
 			}
 			else {
-				reserveSupply(mapQ);
+				reserveSupply(mapQ, shipnode);
 			}
 		}
 		else {
@@ -543,12 +531,12 @@ public class OrderApi extends Api {
 		return true;
 	}
 	
-	private void reserveSupply(Map<Integer, Integer> quantity) {
+	private void reserveSupply(Map<Integer, Integer> quantity, String shipnode) {
 		for(int itemid : quantity.keySet()) {
 			//gets quantity needed
 			int q = quantity.get(itemid);
 			//checks onhand supply to fill items
-			for(Row i: session.execute(get_available_stmt.bind(itemid, "onhand"))) {
+			for(Row i: session.execute(get_availableReserved_stmt.bind(itemid, "onhand", shipnode))) {
 				Row r = session.execute(get_reserved_num.bind(itemid, i.getString("shipnode"))).one();
 				int already = 0;
 				if(r == null) {

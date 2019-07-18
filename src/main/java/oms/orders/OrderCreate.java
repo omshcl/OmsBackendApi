@@ -44,7 +44,7 @@ public class OrderCreate extends HttpServlet {
 			responseJson = new JSONObject().put("success","true").toString();
 		}
 		else {
-			responseJson = new JSONObject().put("failure","false").toString();
+			responseJson = new JSONObject().put("success","false").toString();
 		}
 		response.getWriter().write(responseJson);
 	}
