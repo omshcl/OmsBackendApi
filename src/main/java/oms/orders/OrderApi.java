@@ -20,13 +20,13 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, get_max_allid, get_availableReserved_stmt, set_final_stmt, get_reserved_num, get_quantityPickup_stmt, set_finalPartial_stmt, get_ordertype_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
+	set_fulfill_stmt, get_max_allid, customer_ready_stmt, get_availableReserved_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityPickup_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
 		session = super.getSession();
 		//Insert into the orders table
-		create_order_stmt 		= session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type,shipnode,ordertype,fulfilled,delivery_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+		create_order_stmt 		= session.prepare("INSERT INTO ORDERS (id,username,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,demand_type,shipnode,ordertype,fulfilled,delivery_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 		//Selects the next order id
 		select_next_id   		= session.prepare("SELECT next from order_id");
 		//Gets entire order table
@@ -58,6 +58,10 @@ public class OrderApi extends Api {
 		reopen_stmt 			= session.prepare("UPDATE orders set demand_type = 'OPEN_ORDER' where id = ?");
 		//Completes a specific order
 		complete_stmt 			= session.prepare("UPDATE orders set demand_type = 'COMPLETE_ORDER' where id = ?");
+		ready_pickup_stmt 			= session.prepare("UPDATE orders set demand_type = 'READY_PICKUP' where id = ?");
+		customer_coming_stmt 			= session.prepare("UPDATE orders set demand_type = 'CUSTOMER_COMING' where id = ?");
+		customer_ready_stmt 			= session.prepare("UPDATE orders set demand_type = 'CUSTOMER_READY' where id = ?");
+
 		//Partial a specific order
 		partial_stmt 			= session.prepare("UPDATE orders set demand_type = 'PARTIAL_ORDER' where id = ?");
 		//Selects all stock of a certain item
@@ -76,10 +80,23 @@ public class OrderApi extends Api {
 		get_fulfilledMap_stmt   = session.prepare("SELECT fulfilled from orders where id = ?");
 		update_fulfilled_stmt   = session.prepare("UPDATE orders set fulfilled = ? where id = ?");
 		update_ddate_stmt       = session.prepare("UPDATE orders set delivery_date = ? where id = ?");
-		get_ordertype_stmt      = session.prepare("SELECT ordertype from orders where id = ?");
 		get_reserved_num		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = 'reserved' and itemid = ? and shipnode = ? and productclass = 'new'");
 	}
 
+	public void customerComing(int id) {
+		session.execute(customer_coming_stmt.bind(id));
+	}
+	public void customerReady(int id) {
+		session.execute(customer_ready_stmt.bind(id));
+		//TODO:SEND ANDROID NOTIFICATION "A clerk will be with you shortly"
+	}
+	
+	public void pickedUp(int id) {
+		session.execute(complete_stmt.bind(id));
+		session.execute(update_ddate_stmt.bind(generateDate(), id));
+		//TODO: SEND ANDROID NOTIFICATION "THANK YOU FOR SHOPPING WITH US"
+	}
+	
 	public JSONArray fulfillDate(int x) {
 		JSONArray data = new JSONArray();
 		int maxid = session.execute(get_max_allid.bind()).one().getInt("maxid");
@@ -228,7 +245,11 @@ public class OrderApi extends Api {
 		System.out.println(itemsF);
 		//change status of order to complete if it was not only fulfilled partially
 		session.execute(update_fulfilled_stmt.bind(itemsF, order.getInt("id")));
-		if(!partial) {
+		if(!partial && order.getString("ordertype").equalsIgnoreCase("pickup")) {
+			session.execute(ready_pickup_stmt.bind(order.getInt("id")));
+			//TODO:Send Android Notification "order is ready for pickup"
+		}
+		else if(!partial) {
 			session.execute(complete_stmt.bind(order.getInt("id")));
 			session.execute(update_ddate_stmt.bind(generateDate(), order.getInt("id")));
 		}
@@ -421,7 +442,7 @@ public class OrderApi extends Api {
 	 * @param orderJson
 	 */
 	private void addToObject(Row order, JSONObject orderJson) {
-		String[] strColumns = {"address","channel","city","date"
+		String[] strColumns = {"address","username","channel","city","date"
 				,"firstname","lastname","payment","state","zip","demand_type", "ordertype", "shipnode"};
 		String[] intColumns = {"id","total"};
 		orderJson.put("id", order.getInt("id"));
@@ -464,6 +485,7 @@ public class OrderApi extends Api {
 	private boolean insertOrderIntoDb(int id, JSONObject json) {
 		//retrieves information from JSONObject
 		String channel   = json.getString("channel");
+		String username  = json.getString("username");
 		String date      = json.getString("date").substring(0,10);
 		String firstname = json.getString("firstname");
 		String lastname  = json.getString("lastname");
@@ -530,7 +552,7 @@ public class OrderApi extends Api {
 		
 		//inserts order into db
 		System.out.println("date: " + date);
-		session.execute(create_order_stmt.bind(id,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled,""));
+		session.execute(create_order_stmt.bind(id,username,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled,""));
 		return true;
 	}
 	
