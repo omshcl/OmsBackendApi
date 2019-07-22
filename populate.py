@@ -53,8 +53,10 @@ schema = [
     ,"insert into shipnodes (locationname) VALUES('New Orleans');"
     ,"insert into shipnodes (locationname) VALUES('San Antonio');"
     ,"CREATE TABLE oms.users (username text PRIMARY KEY,isadmin boolean,password text);"
+    ,"CREATE TABLE oms.customer_login (username text PRIMARY KEY,password text);"
     ,"insert into users (username,isadmin,password) VALUES('admin',true,'�I�Y47����:�oj');"
     ,"insert into users (username,isadmin,password) VALUES('agent',false,'L��G;y���h�w����');"
+    ,"insert into customer_login (username,password) VALUES('pat_abh', '�I�Y47����:�oj');"
 ]
 for command in schema:
     session.execute(command)
