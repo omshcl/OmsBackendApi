@@ -35,7 +35,7 @@ session = cluster.connect("oms")
 schema = [
     "CREATE TABLE oms.shipnodes (locationname text PRIMARY KEY);"
     ,"CREATE TABLE oms.order_id (id text PRIMARY KEY,next int);"
-    ,"CREATE TABLE oms.orders (id int PRIMARY KEY,address text,channel text,city text,date text,delivery_date text,demand_type text,firstname text,lastname text,payment text,price map<int, int>,quantity map<int, int>,state text,total int,zip text, shipnode text, ordertype text, fulfilled map<int, int>);"
+    ,"CREATE TABLE oms.orders (id int PRIMARY KEY,address text,channel text,city text,date text,delivery_date text,demand_type text,firstname text,lastname text,payment text,price map<int, int>,quantity map<int, int>,state text,total int,zip text,shipnode text, ordertype text, fulfilled map<int, int>, username text);"
     ,"CREATE TABLE oms.items (itemid int PRIMARY KEY,category text,isreturnable text,itemdescription text,manufacturername text,price int,shortdescription text,subcategory text,unitofmeasure text);"
     ,"CREATE TABLE oms.isreturnable (isreturnable text PRIMARY KEY);"
     ,"CREATE TABLE oms.itemsupplies (shipnode text,itemid int,type text,productclass text,eta text,quantity int,shipbydate text,shippingaddress text,PRIMARY KEY (shipnode, itemid, type, productclass));"
@@ -201,6 +201,7 @@ def createItems():
 def createOrders(num): 
     if num < 30: #minimum of 30 orders
         num = 30
+    username = ""
     startdate = (datetime.datetime.now() - datetime.timedelta(days=num+11)).strftime("%Y-%m-%d")
     curdate = startdate
     for order in range(num): #completed orders
@@ -232,8 +233,8 @@ def createOrders(num):
         # get random sample from mock.csv
         sample = mock_data.sample().astype('str').values[0]
         orderId = getNextOrderId()
-        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode]
-        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+"COMPLETE_ORDER"+"')")
+        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode, username]
+        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,username,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+"COMPLETE_ORDER"+"')")
         session.execute(create_stmt,data)
         
     startdate = curdate.strftime('%Y-%m-%d')
@@ -271,8 +272,8 @@ def createOrders(num):
         # get random sample from mock.csv
         sample = mock_data.sample().astype('str').values[0]
         orderId = getNextOrderId()
-        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode]
-        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
+        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode,username]
+        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,username,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
         session.execute(create_stmt,data)
         
     startdate = curdate.strftime('%Y-%m-%d')
@@ -301,8 +302,8 @@ def createOrders(num):
         # get random sample from mock.csv
         sample = mock_data.sample().astype('str').values[0]
         orderId = getNextOrderId()
-        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode]
-        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
+        data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode,username]
+        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,username,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
         session.execute(create_stmt,data)    
 
 
