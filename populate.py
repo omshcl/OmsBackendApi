@@ -58,7 +58,8 @@ schema = [
     ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('pat_abh', 'Abhishek', 'Patil', 'Austin', 23);"
     ,"insert into users (username,isadmin,password) VALUES('admin',true,'�I�Y47����:�oj');"
     ,"insert into users (username,isadmin,password) VALUES('agent',false,'L��G;y���h�w����');"
-    ,"insert into customer_login (username,password) VALUES('pat_abh', '�I�Y47����:�oj');"
+    ,"insert into customer_login (username,password) VALUES('pat_abh', 'pQ5JxFk0N/6P1BnpOqFvag==');"
+    ,"insert into customer_login (username,password) VALUES('user1', 'LypzmT4e5f88rDLZjcEFCA==');"
 ]
 for command in schema:
     session.execute(command)

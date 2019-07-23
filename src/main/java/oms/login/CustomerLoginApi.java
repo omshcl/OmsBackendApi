@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Base64;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -60,17 +61,16 @@ public class CustomerLoginApi extends Api {
 		try {
 			factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 			byte[] hash = factory.generateSecret(spec).getEncoded();
+			byte[] encoded = Base64.getEncoder().encode(hash);
+			
 			// encode the password hash bytes as a string to store in db
 			// explicity states locale to make platform independent
-			return new String(hash,"US-ASCII");			
+			return new String(encoded);			
 		} catch (NoSuchAlgorithmException e) {
 			System.out.println("PBKDF2 algorithm not found");
 			e.printStackTrace();
 		} catch (InvalidKeySpecException e) {
 			System.out.println("Invalid Key Spec");
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			System.out.println("locale US-ASCII not found");
 			e.printStackTrace();
 		}
 		return null;
