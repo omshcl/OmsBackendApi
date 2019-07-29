@@ -7,6 +7,12 @@ import java.util.Date;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.time.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
 import java.time.format.DateTimeFormatter;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -19,8 +25,8 @@ public class OrderApi extends Api {
 	
 	private Session session;
 	private PreparedStatement create_order_stmt,
-	select_next_id,inc_id_stmt,list_items_stmt, get_info_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, get_max_allid, customer_ready_stmt, get_availableReserved_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityPickup_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_orderid, partial_stmt, get_fulfilledMap_stmt;
+	select_next_id,inc_id_stmt,list_allorders_stmt, summarize_order_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
+	set_fulfill_stmt, get_max_allid, insert_customer_stmt, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
@@ -30,73 +36,131 @@ public class OrderApi extends Api {
 		//Selects the next order id
 		select_next_id   		= session.prepare("SELECT next from order_id");
 		//Gets entire order table
-		list_items_stmt   		= session.prepare("SELECT * from orders");
+		list_allorders_stmt   	= session.prepare("SELECT * from orders");
 		//Retrieves row from order table about specific order
-		get_info_stmt     		= session.prepare("SELECT * from orders where id = ?");
-		//Finds maximum order id
+		summarize_order_stmt    = session.prepare("SELECT * from orders where id = ?");
+		//Gets map of number fulfilled of each item
+		get_fulfilledMap_stmt   = session.prepare("SELECT fulfilled from orders where id = ?");
+		//Finds maximum order id from all orders
 		get_max_allid			= session.prepare("SELECT max(id) as maxid from orders allow filtering");
-		get_max_orderid			= session.prepare("SELECT max(id) as maxid from orders where demand_type = 'COMPLETE_ORDER' allow filtering");
+		//Finds maximum order id out of completed orders
+		get_max_completeid		= session.prepare("SELECT max(id) as maxid from orders where demand_type = 'COMPLETE_ORDER' allow filtering");
 		//Selects COMPLETE_ORDERs
 		get_completed_list 		= session.prepare("SELECT * from orders where demand_type = 'COMPLETE_ORDER' and id > ? allow filtering");
-		//Selects orderslimit
-		get_limitorder_list 		= session.prepare("SELECT * from orders where id > ? allow filtering");
+		//Selects orders limited
+		get_limitorder_list 	= session.prepare("SELECT * from orders where id > ? allow filtering");
 		//Selects orders that are OPEN_ORDERs
 		get_open_list			= session.prepare("SELECT * from orders where demand_type = 'OPEN_ORDER' allow filtering");
 		//Selects ALLOCATE_ORDERs to prepare to complete
 		set_final_stmt	 		= session.prepare("SELECT * from orders where demand_type = 'ALLOCATE_ORDER' allow filtering");
 		//Selects PARTIAL_ORDERs to prepare to complete
 		set_finalPartial_stmt   = session.prepare("SELECT * from orders where demand_type = 'PARTIAL_ORDER' allow filtering"); 
-		//Selects PARTIAL_ORDERs to prepare to complete
-		set_finalReserved_stmt   = session.prepare("SELECT * from orders where demand_type = 'RESERVED_ORDER' allow filtering");
+		//Selects RESERVED_ORDERs to prepare to complete
+		set_finalReserved_stmt  = session.prepare("SELECT * from orders where demand_type = 'RESERVED_ORDER' allow filtering");
 		//Generates new order ids
 		inc_id_stmt      		= session.prepare("UPDATE order_id set next = ? where id ='id'");
 		//Sets an order to SCHEDULE_ORDER
 		set_schedule_stmt 		= session.prepare("UPDATE orders set demand_type = 'SCHEDULE_ORDER' where id = ?");
-		//Sets an order to ALLOCATE_ORDER and sets delivery_date
+		//Sets an order to ALLOCATE_ORDER
 		set_fulfill_stmt 		= session.prepare("UPDATE orders set demand_type = 'ALLOCATE_ORDER' where id = ?");
 		//Resets a specific order to OPEN_ORDER status
 		reopen_stmt 			= session.prepare("UPDATE orders set demand_type = 'OPEN_ORDER' where id = ?");
 		//Completes a specific order
 		complete_stmt 			= session.prepare("UPDATE orders set demand_type = 'COMPLETE_ORDER' where id = ?");
-		ready_pickup_stmt 			= session.prepare("UPDATE orders set demand_type = 'READY_PICKUP' where id = ?");
-		customer_coming_stmt 			= session.prepare("UPDATE orders set demand_type = 'CUSTOMER_COMING' where id = ?");
-		customer_ready_stmt 			= session.prepare("UPDATE orders set demand_type = 'CUSTOMER_READY' where id = ?");
-
-		//Partial a specific order
+		//Sets an order to being ready for pickup
+		ready_pickup_stmt 		= session.prepare("UPDATE orders set demand_type = 'READY_PICKUP' where id = ?");
+		//Sets an order to CUSTOMER_COMING
+		customer_coming_stmt 	= session.prepare("UPDATE orders set demand_type = 'CUSTOMER_COMING' where id = ?");
+		//Sets an order to CUSTOMER_READY
+		customer_ready_stmt 	= session.prepare("UPDATE orders set demand_type = 'CUSTOMER_READY' where id = ?");
+		//Sets order as Partial
 		partial_stmt 			= session.prepare("UPDATE orders set demand_type = 'PARTIAL_ORDER' where id = ?");
-		//Selects all stock of a certain item
+		//Updates fulfilled map
+		update_fulfilled_stmt   = session.prepare("UPDATE orders set fulfilled = ? where id = ?");
+		//Updates delivery_date
+		update_ddate_stmt       = session.prepare("UPDATE orders set delivery_date = ? where id = ?");
+		//Selects all stock of a certain itemid of specific type that is new
 		get_available_stmt 		= session.prepare("SELECT * from itemsupplies where itemid = ? and type = ? and productclass = 'new' allow filtering");
-		get_availableReserved_stmt 		= session.prepare("SELECT * from itemsupplies where itemid = ? and type = ? and shipnode = ? and productclass = 'new' allow filtering");
-		//changes stock of item
-		update_stock_stmt 		= session.prepare("UPDATE itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
+		//Selects all stock of a certain itemid of specific type that is new with Shipnode Restrictions
+		get_availableR_stmt 	= session.prepare("SELECT * from itemsupplies where itemid = ? and type = ? and shipnode = ? and productclass = 'new' allow filtering");
 		//Finds the number of new, onhand stock of a certain item
 		get_quantity_stmt 		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = ? and itemid = ? and productclass = 'new' allow filtering");
-		//Finds the number of new, onhand stock of a certain item
-		get_quantityPickup_stmt 		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = ? and itemid = ? and shipnode = ? and productclass = 'new' allow filtering");
+		//Finds the number of new, onhand stock of a certain item restricting shipnode
+		get_quantityR_stmt 		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = ? and itemid = ? and shipnode = ? and productclass = 'new' allow filtering");
 		//Gets price of a specific item
 		get_price_stmt    		= session.prepare("SELECT price from items where itemid = ? allow filtering");
 		//Gets not necessarily unique shortdescription for specific itemid
 		get_shortdescri_stmt 	= session.prepare("SELECT shortdescription from items where itemid = ?");
-		get_fulfilledMap_stmt   = session.prepare("SELECT fulfilled from orders where id = ?");
-		update_fulfilled_stmt   = session.prepare("UPDATE orders set fulfilled = ? where id = ?");
-		update_ddate_stmt       = session.prepare("UPDATE orders set delivery_date = ? where id = ?");
+		//Gets reserved quantity
 		get_reserved_num		= session.prepare("SELECT sum(quantity) as total from itemsupplies where type = 'reserved' and itemid = ? and shipnode = ? and productclass = 'new'");
+		//changes stock of item
+		update_stock_stmt 		= session.prepare("UPDATE itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
+		//insert into customers table
+		insert_customer_stmt    = session.prepare("INSERT INTO customers (username, firstname, lastname, shipnode, orderid) VALUES (?,?,?,?,?)");
 	}
+	
+	/**
+	 * Uses Api Endpoint from Android App to send messages
+	 * @param msg
+	 */
+	public void sendNotification(String msg) {
+		try {
+			String url = "https://fcm.googleapis.com/fcm/send";
+			URL obj = new URL(url);
+			HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 
+			//add reuqest header
+			con.setRequestMethod("POST");
+		    con.setRequestProperty ("Authorization", "AAAA7_yjI88:APA91bHetBda99uKP-arCJVi6fIM513R2WSigAFvqUxPuD3a47-Y9CzDGJveDgemRtAP_vv8v5SzM_GHwWhRINzlogIqzVXeDiJrwWhgNNO4JvkaTpQpnTm0uDs6Qx2nCI9wThUGvefY");
+			JSONObject o = new JSONObject();
+			o.put("to", "c5iDvD5DPkY:APA91bHrwWeG5F4BgJ4DuxqUhaaPqy9pMDmUnUd0jT_8lsETRKEDzU3_y5DnqTQI08uy0EfvlXyqyJ_KDtXp1tWZRQ2kFBF-7VOF806wfslWy-2VoxFxOxDYCsjNxHd9ElCWl3sK9tQM");
+			o.put("body", msg);
+			o.put("title", msg);
+			// Send post request
+			con.setDoOutput(true);
+			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+			wr.writeBytes(msg);
+			wr.flush();
+			wr.close();
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+	}
+	
+	/**
+	 * Sets the demand_type to CUSTOMER_COMING
+	 * @param id
+	 */
 	public void customerComing(int id) {
 		session.execute(customer_coming_stmt.bind(id));
 	}
+	//username and check status of order id and update 
+	//list all orders with customer
+	/**
+	 * Sets the demand_type to CUSTOMER_READY and sends notification
+	 * @param id
+	 */
 	public void customerReady(int id) {
 		session.execute(customer_ready_stmt.bind(id));
-		//TODO:SEND ANDROID NOTIFICATION "A clerk will be with you shortly"
+		sendNotification("A store clerk will be with you shortly");
 	}
 	
+	/**
+	 * Sets delivery date and sets demand_type to COMPLETE_ORDER and sends notification
+	 * @param id
+	 */
 	public void pickedUp(int id) {
 		session.execute(complete_stmt.bind(id));
 		session.execute(update_ddate_stmt.bind(generateDate(), id));
-		//TODO: SEND ANDROID NOTIFICATION "THANK YOU FOR SHOPPING WITH US"
+		sendNotification("Thank you for shopping with us");
 	}
 	
+	/**
+	 * Iterates through orders and gets the number of days for orders to be completely/partially completed
+	 * @param x
+	 * @return JSONArray of demand_type, number of days, id
+	 */
 	public JSONArray fulfillDate(int x) {
 		JSONArray data = new JSONArray();
 		int maxid = session.execute(get_max_allid.bind()).one().getInt("maxid");
@@ -119,15 +183,21 @@ public class OrderApi extends Api {
 		return data;
 	}
 	
+	 /**
+	  * Finds difference in days
+	  * @param d1
+	  * @param d2
+	  * @return difference in days
+	  */
 	private int calculateDifference(String d1, String d2) {
 		LocalDate date = LocalDate.parse(d1, DateTimeFormatter.ISO_LOCAL_DATE);
 		LocalDate delivery_date = LocalDate.parse(d2, DateTimeFormatter.ISO_LOCAL_DATE);
 		Duration diff = Duration.between(date.atStartOfDay(), delivery_date.atStartOfDay());
 		return (int)diff.toDays();
 	}
+	
 	/**
 	 * Completes Orders marked as ALLOCATE_ORDER and current date with stock available 
-	 * TODO: IN PROGRESS: NEED TO MANAGE FULFILL AND TEST
 	 */
 	public void completeOrder() {
 	    //Completes all possible orders of demand_type ALLOCATE_ORDER/PARTIAL_ORDER
@@ -139,15 +209,19 @@ public class OrderApi extends Api {
 	    }
 	}
 	
+	/**
+	 * Handles reservations and removes from stock
+	 * @param id
+	 */
 	public void handleReservation(int id) {
-		Row order = session.execute(get_info_stmt.bind(id)).one();
+		Row order = session.execute(summarize_order_stmt.bind(id)).one();
 		String shipnode = order.getString("shipnode");
 		Map<Integer, Integer> quantity = order.getMap("quantity", Integer.class, Integer.class);
 		for(int itemid : quantity.keySet()) {
 			//gets quantity needed
 			int q = quantity.get(itemid);
 			//checks onhand supply to fill items
-			Row i = session.execute(get_availableReserved_stmt.bind(itemid, "reserved", shipnode)).one(); 
+			Row i = session.execute(get_availableR_stmt.bind(itemid, "reserved", shipnode)).one(); 
 			int stock = i.getInt("quantity");
 			session.execute(update_stock_stmt.bind(stock - q, i.getString("shipnode"), itemid, "reserved", i.getString("productclass")));
 		}
@@ -156,6 +230,10 @@ public class OrderApi extends Api {
 		session.execute(update_ddate_stmt.bind(generateDate(), order.getInt("id")));
 	}
 	
+	/**
+	 * Handle orders and check if fillable
+	 * @param order
+	 */
 	private void handleOrder(com.datastax.driver.core.Row order) {
 		//checks if anything can be filled
 		boolean fillable = checkFillable(order);
@@ -169,6 +247,10 @@ public class OrderApi extends Api {
 		}
 	}
 	
+	/**
+	 * Generate todays date in yyyy-MM-dd
+	 * @return String
+	 */
 	private String generateDate() {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");  
 	    Date date = new Date();
@@ -176,13 +258,18 @@ public class OrderApi extends Api {
 	    return d;
 	}
 	
+	/**
+	 * Subtracts from itemsupplies and completes
+	 * @param order
+	 */
 	private void fillOrder(com.datastax.driver.core.Row order) {
 		//assumes not only partially complete
 		boolean partial = false;
 		//gets ordertype to look at safety stock
 		String ordertype = order.getString("ordertype").toLowerCase();
 		//gets needed quantity for order
-		Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);				//gets num of each item already filled
+		Map<Integer,Integer> items = order.getMap("quantity", Integer.class, Integer.class);				
+		//gets num of each item already filled
 		Map<Integer,Integer> itemsF = order.getMap("fulfilled", Integer.class, Integer.class);
 		//goes through all requested items
 		for(int itemid : items.keySet()) {
@@ -247,7 +334,7 @@ public class OrderApi extends Api {
 		session.execute(update_fulfilled_stmt.bind(itemsF, order.getInt("id")));
 		if(!partial && order.getString("ordertype").equalsIgnoreCase("pickup")) {
 			session.execute(ready_pickup_stmt.bind(order.getInt("id")));
-			//TODO:Send Android Notification "order is ready for pickup"
+			sendNotification("Order " + order.getInt("id") + " is ready for pickup");
 		}
 		else if(!partial) {
 			session.execute(complete_stmt.bind(order.getInt("id")));
@@ -258,7 +345,11 @@ public class OrderApi extends Api {
 		}
 	}
 	
-	
+	/**
+	 * Check if an order is fillable
+	 * @param order
+	 * @return boolean
+	 */
 	private boolean checkFillable(com.datastax.driver.core.Row order) {
 		//gets ordertype to look at safety stock
 		String ordertype = order.getString("ordertype").toLowerCase();
@@ -271,9 +362,15 @@ public class OrderApi extends Api {
 		return checkItemsFillable(items, itemsF, ordertype, order.getString("shipnode"));
 	}
 	
+	/**
+	 * check if an order is reservable
+	 * @param items
+	 * @param shipnode
+	 * @return boolean
+	 */
 	private boolean checkReservable(Map<Integer,Integer> items, String shipnode) {		
 		for(int itemid : items.keySet()) {
-			int available = session.execute(get_quantityPickup_stmt.bind("onhand", itemid, shipnode)).one().getInt("total"); 
+			int available = session.execute(get_quantityR_stmt.bind("onhand", itemid, shipnode)).one().getInt("total"); 
 			if(available < items.get(itemid)) {
 				return false;
 			}
@@ -282,13 +379,21 @@ public class OrderApi extends Api {
 		return true;
 	}
 	
+	/**
+	 * Check if items are available given restrictions
+	 * @param items
+	 * @param itemsF
+	 * @param ordertype
+	 * @param shipnode
+	 * @return boolean
+	 */
 	private boolean checkItemsFillable(Map<Integer,Integer> items, Map<Integer,Integer> itemsF, String ordertype, String shipnode) {
 		Boolean fillable = false;
 		for(int itemid : items.keySet()) {
 			int available;
 			if(ordertype.equalsIgnoreCase("pickup")) {
-				available = session.execute(get_quantityPickup_stmt.bind("onhand", itemid, shipnode)).one().getInt("total") + 
-						session.execute(get_quantityPickup_stmt.bind(ordertype, itemid, shipnode)).one().getInt("total");
+				available = session.execute(get_quantityR_stmt.bind("onhand", itemid, shipnode)).one().getInt("total") + 
+						session.execute(get_quantityR_stmt.bind(ordertype, itemid, shipnode)).one().getInt("total");
 
 			}
 			else {
@@ -313,7 +418,6 @@ public class OrderApi extends Api {
 	
 	/**
 	 * Assigns OPEN_ORDERS with stock as SCHEDULE_ORDER
-	 * TODO: CHECK SAFETY AND ORDERTYPE
 	 */
 	public void scheduleOrders() {
 		//iterates through all OPEN_ORDERs
@@ -398,7 +502,7 @@ public class OrderApi extends Api {
 		JSONArray orders = new JSONArray();
 		JSONObject orderJson = new JSONObject();
 
-		Row order = session.execute(get_info_stmt.bind(id)).one(); 
+		Row order = session.execute(summarize_order_stmt.bind(id)).one(); 
 		addToObject(order, orderJson);
 		return orderJson;
 	}
@@ -409,7 +513,7 @@ public class OrderApi extends Api {
 	 */
 	public JSONArray listCompletedOrders(int numRows) {
 		JSONArray orders = new JSONArray();
-		int max = session.execute(get_max_orderid.bind()).one().getInt("maxid");
+		int max = session.execute(get_max_completeid.bind()).one().getInt("maxid");
 		int start = max - numRows;
 		if(start > max) {
 			start = 0;
@@ -428,7 +532,7 @@ public class OrderApi extends Api {
 	 */
 	public JSONArray listOrders() {
 		JSONArray orders = new JSONArray();
-		for(Row order:session.execute(list_items_stmt.bind())) {
+		for(Row order:session.execute(list_allorders_stmt.bind())) {
 			JSONObject orderJson = new JSONObject();
 			addToObject(order, orderJson);
 			orders.put(orderJson);
@@ -478,7 +582,6 @@ public class OrderApi extends Api {
 	
 	/**
 	 * insert order info into db
-	 * TODO:LOGIC FOR RESERVATION
 	 * @param id
 	 * @param json
 	 */
@@ -553,6 +656,7 @@ public class OrderApi extends Api {
 		//inserts order into db
 		System.out.println("date: " + date);
 		session.execute(create_order_stmt.bind(id,username,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled,""));
+		session.execute(insert_customer_stmt.bind(username, firstname, lastname, shipnode, id));
 		return true;
 	}
 	
@@ -561,7 +665,7 @@ public class OrderApi extends Api {
 			//gets quantity needed
 			int q = quantity.get(itemid);
 			//checks onhand supply to fill items
-			for(Row i: session.execute(get_availableReserved_stmt.bind(itemid, "onhand", shipnode))) {
+			for(Row i: session.execute(get_availableR_stmt.bind(itemid, "onhand", shipnode))) {
 				Row r = session.execute(get_reserved_num.bind(itemid, i.getString("shipnode"))).one();
 				int already = 0;
 				if(r == null) {

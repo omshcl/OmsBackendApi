@@ -21,7 +21,7 @@ public class CustomerComing extends HttpServlet {
 
 	@Override
 	/**
-	 * GET Request that checks if an order can be completed and completes it
+	 * POST Request that sets CUSTOMER_COMING
 	 * @param request
 	 * @param response
 	 * @throws IOException

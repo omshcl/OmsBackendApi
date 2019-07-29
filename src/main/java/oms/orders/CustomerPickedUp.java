@@ -21,7 +21,7 @@ public class CustomerPickedUp extends HttpServlet {
 
 	@Override
 	/**
-	 * GET Request that checks if an order can be completed and completes it
+	 * POST Request that completes the order
 	 * @param request
 	 * @param response
 	 * @throws IOException

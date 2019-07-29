@@ -21,7 +21,7 @@ public class CustomerReady extends HttpServlet {
 
 	@Override
 	/**
-	 * GET Request that checks if an order can be completed and completes it
+	 * POST that sets that the customer is ready
 	 * @param request
 	 * @param response
 	 * @throws IOException

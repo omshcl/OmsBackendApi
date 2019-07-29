@@ -22,7 +22,7 @@ public class OrderDate extends HttpServlet {
 
 	@Override
 	/**
-	 * GET Request that sends all complete_orders
+	 * POST Request that sends graph data
 	 * @param request
 	 * @param response
 	 * @throws IOException
