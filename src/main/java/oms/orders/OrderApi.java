@@ -26,7 +26,7 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_allorders_stmt, summarize_order_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, get_max_allid, insert_customer_stmt, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
+	set_fulfill_stmt, get_max_allid, insert_customer_stmt, customer_orders_list, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
@@ -57,6 +57,8 @@ public class OrderApi extends Api {
 		set_finalPartial_stmt   = session.prepare("SELECT * from orders where demand_type = 'PARTIAL_ORDER' allow filtering"); 
 		//Selects RESERVED_ORDERs to prepare to complete
 		set_finalReserved_stmt  = session.prepare("SELECT * from orders where demand_type = 'RESERVED_ORDER' allow filtering");
+		//Selects all orders made by a specific user
+		customer_orders_list    = session.prepare("SELECT * from orders where customer = ? allow filtering");
 		//Generates new order ids
 		inc_id_stmt      		= session.prepare("UPDATE order_id set next = ? where id ='id'");
 		//Sets an order to SCHEDULE_ORDER
@@ -104,28 +106,37 @@ public class OrderApi extends Api {
 	 * @param msg
 	 */
 	public void sendNotification(String msg) {
-		try {
-			String url = "https://fcm.googleapis.com/fcm/send";
-			URL obj = new URL(url);
-			HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-
-			//add reuqest header
-			con.setRequestMethod("POST");
-		    con.setRequestProperty ("Authorization", "AAAA7_yjI88:APA91bHetBda99uKP-arCJVi6fIM513R2WSigAFvqUxPuD3a47-Y9CzDGJveDgemRtAP_vv8v5SzM_GHwWhRINzlogIqzVXeDiJrwWhgNNO4JvkaTpQpnTm0uDs6Qx2nCI9wThUGvefY");
-			JSONObject o = new JSONObject();
-			o.put("to", "c5iDvD5DPkY:APA91bHrwWeG5F4BgJ4DuxqUhaaPqy9pMDmUnUd0jT_8lsETRKEDzU3_y5DnqTQI08uy0EfvlXyqyJ_KDtXp1tWZRQ2kFBF-7VOF806wfslWy-2VoxFxOxDYCsjNxHd9ElCWl3sK9tQM");
-			o.put("body", msg);
-			o.put("title", msg);
-			// Send post request
-			con.setDoOutput(true);
-			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			wr.writeBytes(msg);
-			wr.flush();
-			wr.close();
-		}
-		catch(Exception e) {
-			System.out.println(e);
-		}
+//		try {
+//			String url = "https://fcm.googleapis.com/fcm/send";
+//			URL obj = new URL(url);
+//			HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+//
+//			//add reuqest header
+//			con.setRequestMethod("POST");
+//		    con.setRequestProperty ("Authorization", "AAAA7_yjI88:APA91bHetBda99uKP-arCJVi6fIM513R2WSigAFvqUxPuD3a47-Y9CzDGJveDgemRtAP_vv8v5SzM_GHwWhRINzlogIqzVXeDiJrwWhgNNO4JvkaTpQpnTm0uDs6Qx2nCI9wThUGvefY");
+//			JSONObject o = new JSONObject();
+//			o.put("to", "c5iDvD5DPkY:APA91bHrwWeG5F4BgJ4DuxqUhaaPqy9pMDmUnUd0jT_8lsETRKEDzU3_y5DnqTQI08uy0EfvlXyqyJ_KDtXp1tWZRQ2kFBF-7VOF806wfslWy-2VoxFxOxDYCsjNxHd9ElCWl3sK9tQM");
+//			o.put("body", msg);
+//			o.put("title", msg);
+//			// Send post request
+//			con.setDoOutput(true);
+//			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+//			wr.writeBytes(msg);
+//			wr.flush();
+//			wr.close();
+//		}
+//		catch(Exception e) {
+//			System.out.println(e);
+//		}
+		
+//		try {
+//			AutomatedTelnetClient telnet = new AutomatedTelnetClient(msg);
+//			//telnet.sendCommand(“ps -ef “);
+//			telnet.disconnect();
+//			}
+//			catch (Exception e) {
+//				e.printStackTrace();
+//			}
 	}
 	
 	/**
@@ -257,6 +268,20 @@ public class OrderApi extends Api {
 	    String d = formatter.format(date);
 	    return d;
 	}
+	
+	/**
+	 * Gets list of customer orders
+	 */
+	public JSONArray customerOrders(String username) {
+		JSONArray orders = new JSONArray();
+		for(Row order:session.execute(customer_orders_list.bind(username))) {
+			JSONObject orderJson = new JSONObject();
+			addToObject(order, orderJson);
+			orders.put(orderJson);
+		}
+		return orders;
+	}
+	
 	
 	/**
 	 * Subtracts from itemsupplies and completes
