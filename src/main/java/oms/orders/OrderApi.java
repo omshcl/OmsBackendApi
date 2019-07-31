@@ -58,7 +58,7 @@ public class OrderApi extends Api {
 		//Selects RESERVED_ORDERs to prepare to complete
 		set_finalReserved_stmt  = session.prepare("SELECT * from orders where demand_type = 'RESERVED_ORDER' allow filtering");
 		//Selects all orders made by a specific user
-		customer_orders_list    = session.prepare("SELECT * from orders where customer = ? allow filtering");
+		customer_orders_list    = session.prepare("SELECT * from orders where username = ? allow filtering");
 		//Generates new order ids
 		inc_id_stmt      		= session.prepare("UPDATE order_id set next = ? where id ='id'");
 		//Sets an order to SCHEDULE_ORDER
