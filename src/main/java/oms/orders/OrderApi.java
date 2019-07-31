@@ -2,6 +2,11 @@ package oms.orders;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.client.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.*;
+import org.apache.http.impl.client.*;
+import org.apache.http.entity.*;
 import java.text.SimpleDateFormat;  
 import java.util.Date; 
 import org.json.JSONArray;
@@ -58,7 +63,7 @@ public class OrderApi extends Api {
 		//Selects RESERVED_ORDERs to prepare to complete
 		set_finalReserved_stmt  = session.prepare("SELECT * from orders where demand_type = 'RESERVED_ORDER' allow filtering");
 		//Selects all orders made by a specific user
-		customer_orders_list    = session.prepare("SELECT * from orders where customer = ? allow filtering");
+		customer_orders_list    = session.prepare("SELECT * from orders where username = ? allow filtering");
 		//Generates new order ids
 		inc_id_stmt      		= session.prepare("UPDATE order_id set next = ? where id ='id'");
 		//Sets an order to SCHEDULE_ORDER
@@ -105,38 +110,30 @@ public class OrderApi extends Api {
 	 * Uses Api Endpoint from Android App to send messages
 	 * @param msg
 	 */
-	public void sendNotification(String msg) {
-//		try {
-//			String url = "https://fcm.googleapis.com/fcm/send";
-//			URL obj = new URL(url);
-//			HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-//
-//			//add reuqest header
-//			con.setRequestMethod("POST");
-//		    con.setRequestProperty ("Authorization", "AAAA7_yjI88:APA91bHetBda99uKP-arCJVi6fIM513R2WSigAFvqUxPuD3a47-Y9CzDGJveDgemRtAP_vv8v5SzM_GHwWhRINzlogIqzVXeDiJrwWhgNNO4JvkaTpQpnTm0uDs6Qx2nCI9wThUGvefY");
-//			JSONObject o = new JSONObject();
-//			o.put("to", "c5iDvD5DPkY:APA91bHrwWeG5F4BgJ4DuxqUhaaPqy9pMDmUnUd0jT_8lsETRKEDzU3_y5DnqTQI08uy0EfvlXyqyJ_KDtXp1tWZRQ2kFBF-7VOF806wfslWy-2VoxFxOxDYCsjNxHd9ElCWl3sK9tQM");
-//			o.put("body", msg);
-//			o.put("title", msg);
-//			// Send post request
-//			con.setDoOutput(true);
-//			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-//			wr.writeBytes(msg);
-//			wr.flush();
-//			wr.close();
-//		}
-//		catch(Exception e) {
-//			System.out.println(e);
-//		}
+	public void sendNotification(String msg) { 
+		try {
+		HttpClient client = HttpClientBuilder.create().build();
+		HttpPost post = new HttpPost("https://fcm.googleapis.com/fcm/send");
+		post.setHeader("Content-type", "application/json");
+		post.setHeader("Authorization", "key=AAAA0fv4VNE:APA91bGjtwMBk6Z9CYz9AuQyRqPG4KR9DUMpYV5hQjWbbiUDS1U3PgWzFR-CS-Hn6gjDlx0xYfXzcusZceogS8w5Xa3CmR0ujovmpR1z0F6cxMgr4AsKCzhFDTpNYl_MslBN3jUufRZ1");
 		
-//		try {
-//			AutomatedTelnetClient telnet = new AutomatedTelnetClient(msg);
-//			//telnet.sendCommand(“ps -ef “);
-//			telnet.disconnect();
-//			}
-//			catch (Exception e) {
-//				e.printStackTrace();
-//			}
+		JSONObject message = new JSONObject();
+		message.put("to", "fISz-3gaxA0:APA91bEB0TgoNE-KChOjgcoc67DF_fKLnfO7JCNDrI8GNfsIMoLVy-KF5LcbmNdEXrFuQpOYjIb0sb7k7WNXrPvjJdUQW_VOyEGKXG7Zzrnb72MrgC6_OfGIiZDjpGcP0BnYyqvdi7uv");
+
+		JSONObject notification = new JSONObject();
+		notification.put("title", "Order Update");
+		notification.put("body", msg);
+		
+		message.put("notification", notification);
+		
+		post.setEntity(new StringEntity(message.toString(), "UTF-8"));
+		HttpResponse response = client.execute(post);
+		System.out.println(response);
+		System.out.println(message);
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
 	}
 	
 	/**
@@ -145,6 +142,13 @@ public class OrderApi extends Api {
 	 */
 	public void customerComing(int id) {
 		session.execute(customer_coming_stmt.bind(id));
+	}
+	/**
+	 * Resets the demand_type to READY_PICKUP
+	 * @param id
+	 */
+	public void customerCancel(int id) {
+		session.execute(ready_pickup_stmt.bind(id));
 	}
 	//username and check status of order id and update 
 	//list all orders with customer
@@ -288,6 +292,7 @@ public class OrderApi extends Api {
 	 * @param order
 	 */
 	private void fillOrder(com.datastax.driver.core.Row order) {
+		sendNotification("Your order is getting ready to be filled!");
 		//assumes not only partially complete
 		boolean partial = false;
 		//gets ordertype to look at safety stock
