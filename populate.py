@@ -42,6 +42,9 @@ schema = [
     ,"CREATE TABLE oms.productclass (productclass text PRIMARY KEY);"
     ,"CREATE TABLE oms.type (type text PRIMARY KEY);"
     ,"CREATE TABLE oms.id (id text PRIMARY KEY,itemid int);"
+    ,"CREATE TABLE oms.users (username text PRIMARY KEY,isadmin boolean,password text);"
+    ,"CREATE TABLE oms.customer_login (username text PRIMARY KEY,password text);"
+    ,"CREATE TABLE oms.customers (username text PRIMARY KEY, firstname text, lastname text, shipnode text, orderid int);"
     ,"use oms;"
     ,"insert into order_id (id,next)  VALUES ('id',1);"
     ,"insert into id (id,itemid)      VALUES('id',1);"
@@ -50,16 +53,16 @@ schema = [
     ,"insert into shipnodes (locationname) VALUES('Chicago');"
     ,"insert into shipnodes (locationname) VALUES('Dallas');"
     ,"insert into shipnodes (locationname) VALUES('El Paso');"
+    ,"insert into shipnodes (locationname) VALUES('Frisco');"
     ,"insert into shipnodes (locationname) VALUES('New Orleans');"
     ,"insert into shipnodes (locationname) VALUES('San Antonio');"
-    ,"CREATE TABLE oms.users (username text PRIMARY KEY,isadmin boolean,password text);"
-    ,"CREATE TABLE oms.customer_login (username text PRIMARY KEY,password text);"
-    ,"create table customers (username text PRIMARY KEY, firstname text, lastname text, shipnode text, orderid int);"
-    ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('pat_abh', 'Abhishek', 'Patil', 'Austin', 23);"
+    ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('pat_abh', 'Abhishek', 'Patil', 'Austin', 22);"
     ,"insert into users (username,isadmin,password) VALUES('admin',true,'�I�Y47����:�oj');"
     ,"insert into users (username,isadmin,password) VALUES('agent',false,'L��G;y���h�w����');"
     ,"insert into customer_login (username,password) VALUES('pat_abh', 'pQ5JxFk0N/6P1BnpOqFvag==');"
     ,"insert into customer_login (username,password) VALUES('user1', 'LypzmT4e5f88rDLZjcEFCA==');"
+    ,"insert into customer_login (username,password) VALUES('bbagel', 'LypzmT4e5f88rDLZjcEFCA==');"
+    ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('bbagel', 'Bob', 'Bagel', 'Frisco', 112);"
 ]
 for command in schema:
     session.execute(command)
@@ -196,6 +199,33 @@ def createItems():
     itemid = session.execute(get_exist_stmt,[item[0]])
     #if itemid:
     insert(itemid[0][0],data)
+    
+    #create item supply for Frisco for Android App testing  
+    for item in ITEMDATA:
+        description = item[0]
+        sample = mock_data.sample().astype('str').values[0]
+        data = {"productclass":"new"
+        ,"eta":'6/29/19'
+        ,"type":"onhand"
+        ,"quantity":100
+        # get random address
+        ,"shippingaddress":sample[2]
+        # get category from item data
+        ,"category":item[2]
+        ,"locationname":"Frisco"
+        ,"isreturnable":"true","itemdescription":item[0]
+        # get manufacture
+        , "manufacturername":item[3]
+        , "shipbydate":"6/29/19"
+        , "price":int(item[4])
+        , "shortdescription":item[1]
+        ,  "subcategory":"Laptop"
+, "unitofmeasure":"Each"}
+        itemid = session.execute(get_exist_stmt,[item[0]])
+        #if itemid:
+        insert(itemid[0][0],data)
+        #else:
+            #insert(getSupplyId(),data)
 
 
 #create orders default is 1000
@@ -206,6 +236,11 @@ def createOrders(num):
     startdate = (datetime.datetime.now() - datetime.timedelta(days=num+11)).strftime("%Y-%m-%d")
     curdate = startdate
     for order in range(num): #completed orders
+        #set certain orders to 'bbagel'
+        if order in [15, 23, 42, 71]:
+            username = "bbagel"
+        else:
+            username = ""
         date = datetime.datetime.strptime(startdate, '%Y-%m-%d') + datetime.timedelta(days=order)
         curdate = date
         deliverydate = date + datetime.timedelta(days=random.randrange(10)+1)
@@ -305,7 +340,36 @@ def createOrders(num):
         orderId = getNextOrderId()
         data = [orderId, random.choice(["Online","Phone","Fax"]),date,sample[0],sample[1],sample[3],sample[4],sample[5],random.choice(["Credit","PO","Cash"]),total,sample[2],quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode,username]
         create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,username,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
-        session.execute(create_stmt,data)    
+        session.execute(create_stmt,data)  
+
+    for order in range(1): #Create Pickup order for 'bbagel'
+        date = datetime.datetime.strptime(startdate, '%Y-%m-%d') + datetime.timedelta(days=order+1)
+        curdate = date
+        date = date.strftime('%Y-%m-%d')
+        quanities = {}
+        prices = {}
+        fulfilledqtys = {}
+        demandtype = "READY_PICKUP"
+        ordertype = "pickup"
+        shipnode = "Frisco"     
+        # keep tracking of the total price of order
+        total = 0
+        # generate from 1-10 items for each order
+        itemid = 1
+        quantity = 3
+        price = int(ITEMDATA[itemid-1][4])
+        quanities[itemid] = quantity
+        prices[itemid] = price
+        fulfilledqtys[itemid] = 0
+        deliverydate = ""
+        # add current items price to total
+        total+= price*quantity 
+        # get random sample from mock.csv
+        sample = mock_data.sample().astype('str').values[0]
+        orderId = getNextOrderId()
+        data = [orderId, random.choice(["Online"]),date,"Bob","Bagel","Frisco","TX","75034","Credit",total,"1312 Bagel Ln",quanities,prices,fulfilledqtys,deliverydate,ordertype,shipnode,"bbagel"]
+        create_stmt = session.prepare("INSERT INTO ORDERS (id,channel,date,firstname,lastname,city,state,zip,payment,total,address,quantity,price,fulfilled,delivery_date,ordertype,shipnode,username,demand_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'"+demandtype+"')")
+        session.execute(create_stmt,data)         
 
 
 print("create orders")
