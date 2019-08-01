@@ -31,7 +31,7 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_allorders_stmt, summarize_order_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, get_max_allid, insert_customer_stmt, customer_orders_list, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
+	set_fulfill_stmt, get_max_allid, select_fbapi_key, update_fbapi_key, insert_customer_stmt, customer_orders_list, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
@@ -103,14 +103,18 @@ public class OrderApi extends Api {
 		//changes stock of item
 		update_stock_stmt 		= session.prepare("UPDATE itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
 		//insert into customers table
-		insert_customer_stmt    = session.prepare("INSERT INTO customers (username, firstname, lastname, shipnode, orderid) VALUES (?,?,?,?,?)");
+		insert_customer_stmt    = session.prepare("INSERT INTO customers (username, firstname, lastname, shipnode, orderid, fbapikey) VALUES (?,?,?,?,?,?)");
+		select_fbapi_key        = session.prepare("SELECT fbapikey from customers where orderid = ? allow filtering");
+		update_fbapi_key        = session.prepare("UPDATE customers set fbapikey = ? where username = ?");
+
 	}
 	
 	/**
 	 * Uses Api Endpoint from Android App to send messages
 	 * @param msg
 	 */
-	public void sendNotification(String msg) { 
+	public void sendNotification(String msg, int id) { 
+		String to = session.execute(select_fbapi_key.bind(id)).one().getString("fbapikey");
 		try {
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost("https://fcm.googleapis.com/fcm/send");
@@ -118,7 +122,7 @@ public class OrderApi extends Api {
 		post.setHeader("Authorization", "key=AAAA0fv4VNE:APA91bGjtwMBk6Z9CYz9AuQyRqPG4KR9DUMpYV5hQjWbbiUDS1U3PgWzFR-CS-Hn6gjDlx0xYfXzcusZceogS8w5Xa3CmR0ujovmpR1z0F6cxMgr4AsKCzhFDTpNYl_MslBN3jUufRZ1");
 		
 		JSONObject message = new JSONObject();
-		message.put("to", "fISz-3gaxA0:APA91bEB0TgoNE-KChOjgcoc67DF_fKLnfO7JCNDrI8GNfsIMoLVy-KF5LcbmNdEXrFuQpOYjIb0sb7k7WNXrPvjJdUQW_VOyEGKXG7Zzrnb72MrgC6_OfGIiZDjpGcP0BnYyqvdi7uv");
+		message.put("to", to);
 
 		JSONObject notification = new JSONObject();
 		notification.put("title", "Order Update");
@@ -134,6 +138,15 @@ public class OrderApi extends Api {
 		catch(Exception e) {
 			System.out.println(e);
 		}
+	}
+	
+	/**
+	 * updates api key in customer table
+	 * @param username
+	 * @param key
+	 */
+	public void updateFBKey(String username, String key) {
+		session.execute(update_fbapi_key.bind(key,username));
 	}
 	
 	/**
@@ -158,7 +171,7 @@ public class OrderApi extends Api {
 	 */
 	public void customerReady(int id) {
 		session.execute(customer_ready_stmt.bind(id));
-		sendNotification("A store clerk will be with you shortly");
+		sendNotification("A store clerk will be with you shortly", id);
 	}
 	
 	/**
@@ -168,7 +181,7 @@ public class OrderApi extends Api {
 	public void pickedUp(int id) {
 		session.execute(complete_stmt.bind(id));
 		session.execute(update_ddate_stmt.bind(generateDate(), id));
-		sendNotification("Thank you for shopping with us");
+		sendNotification("Thank you for shopping with us", id);
 	}
 	
 	/**
@@ -292,7 +305,6 @@ public class OrderApi extends Api {
 	 * @param order
 	 */
 	private void fillOrder(com.datastax.driver.core.Row order) {
-		sendNotification("Your order is getting ready to be filled!");
 		//assumes not only partially complete
 		boolean partial = false;
 		//gets ordertype to look at safety stock
@@ -364,7 +376,7 @@ public class OrderApi extends Api {
 		session.execute(update_fulfilled_stmt.bind(itemsF, order.getInt("id")));
 		if(!partial && order.getString("ordertype").equalsIgnoreCase("pickup")) {
 			session.execute(ready_pickup_stmt.bind(order.getInt("id")));
-			sendNotification("Order " + order.getInt("id") + " is ready for pickup");
+			sendNotification("Order " + order.getInt("id") + " is ready for pickup", order.getInt("id"));
 		}
 		else if(!partial) {
 			session.execute(complete_stmt.bind(order.getInt("id")));
@@ -686,10 +698,10 @@ public class OrderApi extends Api {
 		//inserts order into db
 		System.out.println("date: " + date);
 		session.execute(create_order_stmt.bind(id,username,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled,""));
-		session.execute(insert_customer_stmt.bind(username, firstname, lastname, shipnode, id));
+//		session.execute(insert_customer_stmt.bind(username, firstname, lastname, shipnode, id,""));
 		return true;
 	}
-	
+		
 	private void reserveSupply(Map<Integer, Integer> quantity, String shipnode) {
 		for(int itemid : quantity.keySet()) {
 			//gets quantity needed
