@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-@WebServlet(urlPatterns="/orders/customer_recieved")
+@WebServlet(urlPatterns="/orders/customer_received")
 public class CustomerPickedUp extends HttpServlet {
 	
 	private OrderApi orderApi;
