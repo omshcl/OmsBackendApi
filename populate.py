@@ -56,13 +56,13 @@ schema = [
     ,"insert into shipnodes (locationname) VALUES('Frisco');"
     ,"insert into shipnodes (locationname) VALUES('New Orleans');"
     ,"insert into shipnodes (locationname) VALUES('San Antonio');"
-    ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('pat_abh', 'Abhishek', 'Patil', 'Austin', 22, '');"
+    ,"insert into customers (username, firstname, lastname, shipnode, orderid, fbapikey) VALUES ('pat_abh', 'Abhishek', 'Patil', 'Austin', 22, '');"
     ,"insert into users (username,isadmin,password) VALUES('admin',true,'�I�Y47����:�oj');"
     ,"insert into users (username,isadmin,password) VALUES('agent',false,'L��G;y���h�w����');"
     ,"insert into customer_login (username,password) VALUES('pat_abh', 'pQ5JxFk0N/6P1BnpOqFvag==');"
     ,"insert into customer_login (username,password) VALUES('user1', 'LypzmT4e5f88rDLZjcEFCA==');"
     ,"insert into customer_login (username,password) VALUES('bbagel', 'LypzmT4e5f88rDLZjcEFCA==');"
-    ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('bbagel', 'Bob', 'Bagel', 'Frisco', 112, '');"
+    ,"insert into customers (username, firstname, lastname, shipnode, orderid, fbapikey) VALUES ('bbagel', 'Bob', 'Bagel', 'Frisco', 112, '');"
 ]
 for command in schema:
     session.execute(command)
