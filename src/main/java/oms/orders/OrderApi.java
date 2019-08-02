@@ -31,7 +31,7 @@ public class OrderApi extends Api {
 	private Session session;
 	private PreparedStatement create_order_stmt,
 	select_next_id,inc_id_stmt,list_allorders_stmt, summarize_order_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
-	set_fulfill_stmt, get_max_allid, select_fbapi_key, update_fbapi_key, insert_customer_stmt, customer_orders_list, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
+	set_fulfill_stmt, get_max_allid, get_customer_info, select_fbapi_key, update_fbapi_key, insert_customer_stmt, customer_orders_list, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
 		super();
@@ -106,9 +106,22 @@ public class OrderApi extends Api {
 		insert_customer_stmt    = session.prepare("INSERT INTO customers (username, firstname, lastname, shipnode, orderid, fbapikey) VALUES (?,?,?,?,?,?)");
 		select_fbapi_key        = session.prepare("SELECT fbapikey from customers where orderid = ? allow filtering");
 		update_fbapi_key        = session.prepare("UPDATE customers set fbapikey = ? where username = ?");
+		get_customer_info		= session.prepare("SELECT * from customers where username = ?");
 
 	}
 	
+	public JSONObject getCustomerData(String username) {
+		Row c = session.execute(get_customer_info.bind(username)).one(); 
+		JSONObject customerJson = new JSONObject();
+		
+		String[] strColumns = {"username","address","city","fbapikey","firstname"
+				,"lastname","shipnode","state","zip"};
+		customerJson.put("orderid", c.getInt("orderid"));
+		for(String colName:strColumns) {
+			customerJson.put(colName, c.getString(colName));
+		}
+		return customerJson;
+	}
 	/**
 	 * Uses Api Endpoint from Android App to send messages
 	 * @param msg
@@ -698,7 +711,6 @@ public class OrderApi extends Api {
 		//inserts order into db
 		System.out.println("date: " + date);
 		session.execute(create_order_stmt.bind(id,username,channel,date,firstname,lastname,city,state,zip,payment,total,address,mapQ,mapP,demand_type,shipnode,ordertype,mapFulfilled,""));
-//		session.execute(insert_customer_stmt.bind(username, firstname, lastname, shipnode, id,""));
 		return true;
 	}
 		
