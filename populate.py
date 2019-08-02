@@ -44,7 +44,7 @@ schema = [
     ,"CREATE TABLE oms.id (id text PRIMARY KEY,itemid int);"
     ,"CREATE TABLE oms.users (username text PRIMARY KEY,isadmin boolean,password text);"
     ,"CREATE TABLE oms.customer_login (username text PRIMARY KEY,password text);"
-    ,"CREATE TABLE oms.customers (username text PRIMARY KEY, firstname text, lastname text, shipnode text, orderid int);"
+    ,"CREATE TABLE oms.customers (username text PRIMARY KEY, firstname text, lastname text, shipnode text, orderid int, fbapikey text, address text, city text, state text, zip text);"
     ,"use oms;"
     ,"insert into order_id (id,next)  VALUES ('id',1);"
     ,"insert into id (id,itemid)      VALUES('id',1);"
@@ -56,13 +56,13 @@ schema = [
     ,"insert into shipnodes (locationname) VALUES('Frisco');"
     ,"insert into shipnodes (locationname) VALUES('New Orleans');"
     ,"insert into shipnodes (locationname) VALUES('San Antonio');"
-    ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('pat_abh', 'Abhishek', 'Patil', 'Austin', 22);"
+    ,"insert into customers (username, firstname, lastname, shipnode, orderid, fbapikey, address, city, state, zip) VALUES ('pat_abh', 'Abhishek', 'Patil', 'Austin', 22, '', '12345 Main St', 'Frisco', 'TX', '75034');"
     ,"insert into users (username,isadmin,password) VALUES('admin',true,'�I�Y47����:�oj');"
     ,"insert into users (username,isadmin,password) VALUES('agent',false,'L��G;y���h�w����');"
     ,"insert into customer_login (username,password) VALUES('pat_abh', 'pQ5JxFk0N/6P1BnpOqFvag==');"
     ,"insert into customer_login (username,password) VALUES('user1', 'LypzmT4e5f88rDLZjcEFCA==');"
     ,"insert into customer_login (username,password) VALUES('bbagel', 'LypzmT4e5f88rDLZjcEFCA==');"
-    ,"insert into customers (username, firstname, lastname, shipnode, orderid) VALUES ('bbagel', 'Bob', 'Bagel', 'Frisco', 112);"
+    ,"insert into customers (username, firstname, lastname, shipnode, orderid, fbapikey, address, city, state, zip) VALUES ('bbagel', 'Bob', 'Bagel', 'Frisco', 112, '', '2324 Bagel Ln', 'Frisco', 'TX', '75034');"
 ]
 for command in schema:
     session.execute(command)
@@ -207,7 +207,7 @@ def createItems():
         data = {"productclass":"new"
         ,"eta":'6/29/19'
         ,"type":"onhand"
-        ,"quantity":100
+        ,"quantity":1000000000
         # get random address
         ,"shippingaddress":sample[2]
         # get category from item data
