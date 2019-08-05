@@ -30,7 +30,7 @@ public class OrderApi extends Api {
 	
 	private Session session;
 	private PreparedStatement create_order_stmt,
-	select_next_id,inc_id_stmt,list_allorders_stmt, summarize_order_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
+	select_next_id,inc_id_stmt,list_allorders_stmt, select_username_id, summarize_order_stmt, get_price_stmt, get_shortdescri_stmt,get_completed_list,get_open_list, get_quantity_stmt, set_schedule_stmt,
 	set_fulfill_stmt, get_max_allid, get_customer_info, select_fbapi_key, update_fbapi_key, insert_customer_stmt, customer_orders_list, customer_ready_stmt, get_availableR_stmt, ready_pickup_stmt, customer_coming_stmt, set_final_stmt, get_reserved_num, get_quantityR_stmt, set_finalPartial_stmt, get_limitorder_list, set_finalReserved_stmt, reopen_stmt, update_ddate_stmt, complete_stmt, get_available_stmt, update_fulfilled_stmt, update_stock_stmt, get_max_completeid, partial_stmt, get_fulfilledMap_stmt;
 
 	public OrderApi() {
@@ -104,7 +104,8 @@ public class OrderApi extends Api {
 		update_stock_stmt 		= session.prepare("UPDATE itemsupplies set quantity = ? where shipnode = ? and itemid = ? and type = ? and productclass = ?");
 		//insert into customers table
 		insert_customer_stmt    = session.prepare("INSERT INTO customers (username, firstname, lastname, shipnode, orderid, fbapikey) VALUES (?,?,?,?,?,?)");
-		select_fbapi_key        = session.prepare("SELECT fbapikey from customers where orderid = ? allow filtering");
+		select_username_id      = session.prepare("SELECT username from orders where id = ?");
+		select_fbapi_key        = session.prepare("SELECT fbapikey from customers where username = ? allow filtering");
 		update_fbapi_key        = session.prepare("UPDATE customers set fbapikey = ? where username = ?");
 		get_customer_info		= session.prepare("SELECT * from customers where username = ?");
 
@@ -127,7 +128,8 @@ public class OrderApi extends Api {
 	 * @param msg
 	 */
 	public void sendNotification(String msg, int id) { 
-		String to = session.execute(select_fbapi_key.bind(id)).one().getString("fbapikey");
+		String user = session.execute(select_username_id.bind(id)).one().getString("username");
+		String to = session.execute(select_fbapi_key.bind(user)).one().getString("fbapikey");
 		try {
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost("https://fcm.googleapis.com/fcm/send");
