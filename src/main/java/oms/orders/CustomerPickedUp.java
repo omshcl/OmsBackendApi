@@ -42,7 +42,7 @@ public class CustomerPickedUp extends HttpServlet {
 		orderApi.pickedUp(id);
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin","*");
-		String responseJson = "success";
+		String responseJson = new JSONObject().put("success","true").toString();
 		response.getWriter().write(responseJson);
 	}
 }
