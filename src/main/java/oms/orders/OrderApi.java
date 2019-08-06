@@ -186,7 +186,6 @@ public class OrderApi extends Api {
 	 */
 	public void customerReady(int id) {
 		session.execute(customer_ready_stmt.bind(id));
-		sendNotification("A store clerk will be with you shortly", id);
 	}
 	
 	/**
