@@ -62,7 +62,7 @@ schema = [
     ,"insert into customer_login (username,password) VALUES('pat_abh', 'pQ5JxFk0N/6P1BnpOqFvag==');"
     ,"insert into customer_login (username,password) VALUES('user1', 'LypzmT4e5f88rDLZjcEFCA==');"
     ,"insert into customer_login (username,password) VALUES('bbagel', 'LypzmT4e5f88rDLZjcEFCA==');"
-    ,"insert into customers (username, firstname, lastname, shipnode, orderid, fbapikey, address, city, state, zip) VALUES ('bbagel', 'Bob', 'Bagel', 'Frisco', 112, '', '2324 Bagel Ln', 'Frisco', 'TX', '75034');"
+    ,"insert into customers (username, firstname, lastname, shipnode, orderid, fbapikey, address, city, state, zip) VALUES ('bbagel', 'Robert', 'Bagel', 'Frisco', 112, '', '2324 Bagel Ln', 'Frisco', 'TX', '75034');"
 ]
 for command in schema:
     session.execute(command)
